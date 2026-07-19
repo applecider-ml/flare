@@ -1,0 +1,44 @@
+{
+  "model": "FLARE day-100 LightGBM",
+  "horizon_days": 100.0,
+  "features": 160,
+  "trees": 1140,
+  "classes": [
+    "SNI",
+    "SNII",
+    "CV",
+    "AGN",
+    "TDE"
+  ],
+  "beta_class_weight": 0.888,
+  "params": {
+    "learning_rate": 0.09483134413908637,
+    "num_leaves": 46,
+    "min_child_samples": 8,
+    "feature_fraction": 0.6937145287549397,
+    "bagging_fraction": 0.5426754716436342,
+    "lambda_l1": 7.910855321001479e-05,
+    "lambda_l2": 9.96680069926267
+  },
+  "optuna_trials": 100,
+  "val_score_auprc_f1_mean": 0.9338,
+  "conformal": {
+    "method": "mondrian_lac",
+    "alpha": 0.1,
+    "n_cal": 1991
+  },
+  "headline_test_N1979": {
+    "accuracy": 0.9565,
+    "balanced_accuracy": 0.8083,
+    "macro_f1": 0.8406,
+    "macro_auprc": 0.914,
+    "ece": 0.0096
+  },
+  "kfold_5fold_N13153": {
+    "accuracy": 0.949,
+    "balanced_accuracy": 0.848,
+    "macro_f1": 0.864,
+    "macro_auprc": 0.902,
+    "ece": 0.01
+  }
+}

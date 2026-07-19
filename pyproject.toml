@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flare-transients"
+version = "1.0.0"
+description = "Feature-based Light-curve Aggregated Ranking Ensemble — physics features + gradient-boosted trees for ZTF photometric transient classification with conformal uncertainty"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Argyro Sasli" }]
+keywords = ["astronomy", "transients", "photometry", "ZTF", "TDE", "classification", "conformal", "lightgbm"]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scipy>=1.11",
+    "scikit-learn>=1.3",
+    "lightgbm>=4.0",
+    "light-curve>=0.9",
+    "pyarrow>=12",
+]
+
+[project.optional-dependencies]
+train = ["optuna>=3.5"]
+figures = ["matplotlib>=3.7", "shap>=0.44"]
+
+[tool.setuptools]
+packages = ["flare"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+flare = ["../models/*.txt", "../models/*.json"]

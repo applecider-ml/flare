@@ -1,0 +1,13 @@
+# Inference + training. Versions used for the published weights.
+numpy==2.3.5
+pandas==2.3.3
+scipy==1.17.1
+scikit-learn==1.8.0
+lightgbm==4.6.0
+light-curve==0.13.1
+pyarrow==23.0.1
+# training only
+optuna==4.8.0
+# figures only
+matplotlib==3.10.8
+shap==0.52.0
