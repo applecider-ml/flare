@@ -1,0 +1,66 @@
+{
+  "ZTF18abcfcoo": {
+    "name": "AT2018cow",
+    "class": "FBOT",
+    "n_events": 15,
+    "n_g": 4,
+    "n_r": 11,
+    "passes_quality": true
+  },
+  "ZTF21aakilyd": {
+    "name": "AT2021csp",
+    "class": "FBOT",
+    "n_events": 16,
+    "n_g": 8,
+    "n_r": 8,
+    "passes_quality": true
+  },
+  "ZTF19aatesgp": {
+    "name": "SN2019ehk",
+    "class": "Ca-rich",
+    "n_events": 26,
+    "n_g": 11,
+    "n_r": 15,
+    "passes_quality": true
+  },
+  "ZTF21aaqhhfu": {
+    "name": "SN2021gno",
+    "class": "Ca-rich",
+    "n_events": 41,
+    "n_g": 17,
+    "n_r": 24,
+    "passes_quality": true
+  },
+  "ZTF22aasxgjp": {
+    "name": "SN2022oqm",
+    "class": "Ca-rich",
+    "n_events": 30,
+    "n_g": 13,
+    "n_r": 17,
+    "passes_quality": true
+  },
+  "ZTF19aadyppr": {
+    "name": "AT2019abn",
+    "class": "ILRT",
+    "n_events": 38,
+    "n_g": 13,
+    "n_r": 25,
+    "passes_quality": true
+  },
+  "ZTF20aahbfmf": {
+    "name": "SN2020ank",
+    "class": "SLSN-I",
+    "n_events": 23,
+    "n_g": 8,
+    "n_r": 15,
+    "passes_quality": true
+  },
+  "ZTF20abjbgjj": {
+    "name": "SN2020kyg",
+    "class": "SN Iax",
+    "n_events": 28,
+    "n_g": 13,
+    "n_r": 15,
+    "passes_quality": true
+  }
+}

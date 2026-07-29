@@ -70,9 +70,15 @@ python scripts/train.py    --horizon 10      # early-time (day-10) model
 
 ## Learn
 
-`notebooks/flare_tutorial.ipynb` is a self-contained, executable lesson
-(pitched at student level) that walks from raw light curves to features, trees,
-calibration, conformal prediction and interpretability, with exercises.
+Two executable, student-level lessons (with exercises and baked outputs):
+
+- `notebooks/flare_tutorial.ipynb` — from raw light curves to features, trees,
+  calibration, conformal prediction and interpretability.
+- `notebooks/similarity_search.ipynb` — the FLARE features as an interpretable
+  embedding: k-NN retrieval ("find more like this one"), a 2-D map of the
+  transient sky, k-NN classification, anomaly detection via neighbour distance,
+  and scaling with approximate NN. Companion to the
+  [SimilaritySearch](https://github.com/asasli/SimilaritySearch) lecture series.
 
 ## What's in the box
 

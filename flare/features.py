@@ -147,7 +147,17 @@ def _color_features(colors: Dict[str, np.ndarray]) -> Dict[str, float]:
 
 def extract_object_features(filepath: str,
                             horizon_days: float = D.HORIZON_DAYS) -> Dict[str, float]:
-    arr = D.load_events(filepath, horizon_days)
+    """Features for one object file (truncated to the horizon)."""
+    return extract_from_array(D.load_events(filepath, horizon_days))
+
+
+def extract_from_array(arr) -> Dict[str, float]:
+    """Features from an already-loaded (n_events, 15) event array.
+
+    Same computation as extract_object_features; exposed separately so callers
+    that already hold the array (e.g. augmented copies during training) can
+    featurise it without touching disk.
+    """
     bands = D.reconstruct_bands(arr)
     out: Dict[str, float] = {}
 

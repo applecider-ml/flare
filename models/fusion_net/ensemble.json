@@ -1,0 +1,9 @@
+{
+  "temperature": 0.538,
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "note": "prob-mean over seeds, then softmax(log(p)/T); T tuned on val NLL"
+}

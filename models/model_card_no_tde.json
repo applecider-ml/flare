@@ -1,0 +1,23 @@
+{
+  "model": "FLARE no-TDE (4-class, summer-school teaching model)",
+  "classes": [
+    "SNI",
+    "SNII",
+    "CV",
+    "AGN"
+  ],
+  "excluded_class": "TDE",
+  "purpose": "anomaly-detection demo: TDEs are unknown to this model",
+  "params": {
+    "learning_rate": 0.09483134413908637,
+    "num_leaves": 46,
+    "min_child_samples": 8,
+    "feature_fraction": 0.6937145287549397,
+    "bagging_fraction": 0.5426754716436342,
+    "lambda_l1": 7.910855321001479e-05,
+    "lambda_l2": 9.96680069926267
+  },
+  "beta_class_weight": 0.888,
+  "trees": 820,
+  "val_accuracy_4class": 0.9546
+}
