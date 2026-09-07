@@ -1,0 +1,200 @@
+obj_id,filepath,bts_type,broad,group,n_events,n_g,n_r,passes_quality
+ZTF18aahmhxu,events/ZTF18aahmhxu.npz,SLSN-II,SNII,peculiar,24,0,24,False
+ZTF18aaisaqo,events/ZTF18aaisaqo.npz,SN Ia-CSM,SNI,peculiar,71,35,36,True
+ZTF18aasufva,events/ZTF18aasufva.npz,SLSN-II,SNII,peculiar,17,6,11,True
+ZTF18aavjcpf,events/ZTF18aavjcpf.npz,SLSN-II,SNII,peculiar,16,4,12,True
+ZTF18abclfee,events/ZTF18abclfee.npz,SN Iax,SNI,peculiar,43,14,29,True
+ZTF18abkmbpy,events/ZTF18abkmbpy.npz,SN Icn,SNI,peculiar,3,0,3,False
+ZTF18abqbuaj,events/ZTF18abqbuaj.npz,SN Ibn,SNI,peculiar,10,3,7,True
+ZTF18abuatfp,events/ZTF18abuatfp.npz,SN Ia-CSM,SNI,peculiar,18,4,14,True
+ZTF18abuicad,events/ZTF18abuicad.npz,SLSN-II,SNII,peculiar,27,12,15,True
+ZTF18abwlupf,events/ZTF18abwlupf.npz,SLSN-II,SNII,peculiar,9,4,5,True
+ZTF18abxbmqh,events/ZTF18abxbmqh.npz,SLSN-II,SNII,peculiar,34,12,22,True
+ZTF18acbvhfl,events/ZTF18acbvhfl.npz,SLSN-II,SNII,peculiar,30,15,15,True
+ZTF18acbwazl,events/ZTF18acbwazl.npz,Ca-rich,SNI,peculiar,16,9,7,True
+ZTF18acnnevs,events/ZTF18acnnevs.npz,SLSN-II,SNII,peculiar,56,30,26,True
+ZTF18acrheel,events/ZTF18acrheel.npz,SN Ibn,SNI,peculiar,10,4,6,True
+ZTF18acsxwdi,events/ZTF18acsxwdi.npz,SLSN-II,SNII,peculiar,23,10,13,True
+ZTF18actuhrs,events/ZTF18actuhrs.npz,SN Ia-CSM,SNI,peculiar,18,8,10,True
+ZTF19aaadwfi,events/ZTF19aaadwfi.npz,SLSN-II,SNII,peculiar,28,18,10,True
+ZTF19aadnxbh,events/ZTF19aadnxbh.npz,SN Ibn,SNI,peculiar,11,7,4,True
+ZTF19aaeopgw,events/ZTF19aaeopgw.npz,SLSN-II,SNII,peculiar,42,18,24,True
+ZTF19aaeoqst,events/ZTF19aaeoqst.npz,SN Ia-CSM,SNI,peculiar,31,16,15,True
+ZTF19aafljiq,events/ZTF19aafljiq.npz,SLSN-II,SNII,peculiar,40,21,19,True
+ZTF19aakphow,events/ZTF19aakphow.npz,SLSN-II,SNII,peculiar,21,10,11,True
+ZTF19aaladlt,events/ZTF19aaladlt.npz,SN II-pec,SNII,peculiar,12,7,5,True
+ZTF19aalbrgu,events/ZTF19aalbrgu.npz,SLSN-II,SNII,peculiar,54,24,30,True
+ZTF19aamrais,events/ZTF19aamrais.npz,SLSN-II,SNII,peculiar,40,19,21,True
+ZTF19aapemqu,events/ZTF19aapemqu.npz,SN Iax,SNI,peculiar,11,4,7,True
+ZTF19aapfmki,events/ZTF19aapfmki.npz,SN Ibn,SNI,peculiar,18,10,8,True
+ZTF19aatmkll,events/ZTF19aatmkll.npz,SN Ibn,SNI,peculiar,21,13,8,True
+ZTF19aayejww,events/ZTF19aayejww.npz,SN Icn,SNI,peculiar,15,8,7,True
+ZTF19aaznwze,events/ZTF19aaznwze.npz,Ca-rich,SNI,peculiar,8,5,3,True
+ZTF19abamqxo,events/ZTF19abamqxo.npz,SN Ibn,SNI,peculiar,21,13,8,True
+ZTF19abhcefa,events/ZTF19abhcefa.npz,SN Ibn,SNI,peculiar,10,4,6,True
+ZTF19abpvbzf,events/ZTF19abpvbzf.npz,SLSN-II,SNII,peculiar,37,19,18,True
+ZTF19abrdxbh,events/ZTF19abrdxbh.npz,Ca-rich,SNI,peculiar,6,3,3,False
+ZTF19abxekxi,events/ZTF19abxekxi.npz,SLSN-II,SNII,peculiar,28,14,14,True
+ZTF19abxequc,events/ZTF19abxequc.npz,SLSN-II,SNII,peculiar,31,14,17,True
+ZTF19acbjddp,events/ZTF19acbjddp.npz,SN Ia-CSM,SNI,peculiar,54,22,32,True
+ZTF19ackzvdp,events/ZTF19ackzvdp.npz,SLSN-II,SNII,peculiar,28,13,15,True
+ZTF19acmbekd,events/ZTF19acmbekd.npz,SN Ibn,SNI,peculiar,11,5,6,True
+ZTF19acmwszk,events/ZTF19acmwszk.npz,SLSN-II,SNII,peculiar,25,12,13,True
+ZTF19acrwyyb,events/ZTF19acrwyyb.npz,SN Ibn,SNI,peculiar,9,5,4,True
+ZTF19acxxwrs,events/ZTF19acxxwrs.npz,SN II-pec,SNII,peculiar,29,10,19,True
+ZTF19acykbce,events/ZTF19acykbce.npz,SLSN-II,SNII,peculiar,13,5,8,True
+ZTF19adcfsoc,events/ZTF19adcfsoc.npz,SLSN-II,SNII,peculiar,34,16,18,True
+ZTF20aabqbxm,events/ZTF20aabqbxm.npz,SN Iax,SNI,peculiar,16,7,9,True
+ZTF20aadcbvz,events/ZTF20aadcbvz.npz,SLSN-II,SNII,peculiar,29,14,15,True
+ZTF20aalrqbu,events/ZTF20aalrqbu.npz,SN Ibn,SNI,peculiar,57,29,28,True
+ZTF20aanrdek,events/ZTF20aanrdek.npz,SN Iax,SNI,peculiar,10,6,4,True
+ZTF20aatqene,events/ZTF20aatqene.npz,SLSN-II,SNII,peculiar,21,21,0,False
+ZTF20abaunmw,events/ZTF20abaunmw.npz,SN Iax,SNI,peculiar,19,9,10,True
+ZTF20abawhtd,events/ZTF20abawhtd.npz,SLSN-II,SNII,peculiar,28,14,14,True
+ZTF20abdxyae,events/ZTF20abdxyae.npz,SN Iax,SNI,peculiar,41,12,29,True
+ZTF20abfadah,events/ZTF20abfadah.npz,SN Ibn,SNI,peculiar,75,39,36,True
+ZTF20abmlxrx,events/ZTF20abmlxrx.npz,SN Ia-CSM,SNI,peculiar,29,13,16,True
+ZTF20abqkbfx,events/ZTF20abqkbfx.npz,SN Ia-CSM,SNI,peculiar,66,31,35,True
+ZTF20abrgzfn,events/ZTF20abrgzfn.npz,SLSN-II,SNII,peculiar,57,25,32,True
+ZTF20abwrcmq,events/ZTF20abwrcmq.npz,SN Iax,SNI,peculiar,70,33,37,True
+ZTF20abyznqs,events/ZTF20abyznqs.npz,SN Ibn,SNI,peculiar,25,16,9,True
+ZTF20acbcfaa,events/ZTF20acbcfaa.npz,SLSN-II,SNII,peculiar,61,29,32,True
+ZTF20acdqjeq,events/ZTF20acdqjeq.npz,SN Iax,SNI,peculiar,86,43,43,True
+ZTF20achncvv,events/ZTF20achncvv.npz,SLSN-II,SNII,peculiar,65,27,38,True
+ZTF20aclnqle,events/ZTF20aclnqle.npz,SLSN-II,SNII,peculiar,54,27,27,True
+ZTF20acmgsfo,events/ZTF20acmgsfo.npz,SLSN-II,SNII,peculiar,48,24,24,True
+ZTF20acqikeh,events/ZTF20acqikeh.npz,SN Ia-CSM,SNI,peculiar,26,7,19,True
+ZTF20acvdfmw,events/ZTF20acvdfmw.npz,SN II-pec,SNII,peculiar,24,11,13,True
+ZTF20aczgxij,events/ZTF20aczgxij.npz,SN Ia-SC,SNI,peculiar,2,0,2,False
+ZTF21aaabwzx,events/ZTF21aaabwzx.npz,SN Ia-CSM,SNI,peculiar,60,30,30,True
+ZTF21aabpnlm,events/ZTF21aabpnlm.npz,SN Ibn,SNI,peculiar,10,6,4,True
+ZTF21aagqdvr,events/ZTF21aagqdvr.npz,SN Iax,SNI,peculiar,31,15,16,True
+ZTF21aakilyd,events/ZTF21aakilyd.npz,SN Icn,SNI,peculiar,16,8,8,True
+ZTF21aalkltz,events/ZTF21aalkltz.npz,SN Ibn,SNI,peculiar,15,7,8,True
+ZTF21aamobbh,events/ZTF21aamobbh.npz,SN Ibn,SNI,peculiar,18,9,9,True
+ZTF21aanefkx,events/ZTF21aanefkx.npz,SLSN-II,SNII,peculiar,49,25,24,True
+ZTF21aaokvio,events/ZTF21aaokvio.npz,SLSN-II,SNII,peculiar,44,25,19,True
+ZTF21aapdumx,events/ZTF21aapdumx.npz,SN Ibn,SNI,peculiar,17,8,9,True
+ZTF21aaqyifh,events/ZTF21aaqyifh.npz,SN II-pec,SNII,peculiar,34,16,18,True
+ZTF21aatwkkt,events/ZTF21aatwkkt.npz,SN Ibn,SNI,peculiar,14,8,6,True
+ZTF21aauvmck,events/ZTF21aauvmck.npz,SN Ibn,SNI,peculiar,10,5,5,True
+ZTF21aavgnld,events/ZTF21aavgnld.npz,SLSN-II,SNII,peculiar,72,31,41,True
+ZTF21aavotzn,events/ZTF21aavotzn.npz,SN Iax,SNI,peculiar,70,29,41,True
+ZTF21abbyhvw,events/ZTF21abbyhvw.npz,SN Iax,SNI,peculiar,20,9,11,True
+ZTF21abghxht,events/ZTF21abghxht.npz,SN II-pec,SNII,peculiar,25,15,10,True
+ZTF21abpltyn,events/ZTF21abpltyn.npz,SN Ia-SC,SNI,peculiar,23,7,16,True
+ZTF21abrzsak,events/ZTF21abrzsak.npz,SN II-pec,SNII,peculiar,7,0,7,False
+ZTF21abuvury,events/ZTF21abuvury.npz,SN Ibn,SNI,peculiar,20,10,10,True
+ZTF21acdmwae,events/ZTF21acdmwae.npz,SN Ia-SC,SNI,peculiar,30,14,16,True
+ZTF21acfjxdx,events/ZTF21acfjxdx.npz,SN Ia-SC,SNI,peculiar,37,4,33,True
+ZTF21achujxq,events/ZTF21achujxq.npz,SN Ibn,SNI,peculiar,28,8,20,True
+ZTF21ackxdos,events/ZTF21ackxdos.npz,SLSN-II,SNII,peculiar,21,0,21,False
+ZTF21acpkzcc,events/ZTF21acpkzcc.npz,SN IIn-pec,SNII,peculiar,11,6,5,True
+ZTF22aaacvyy,events/ZTF22aaacvyy.npz,SLSN-II,SNII,peculiar,54,25,29,True
+ZTF22aaaepgu,events/ZTF22aaaepgu.npz,SN Ibn,SNI,peculiar,17,7,10,True
+ZTF22aabimec,events/ZTF22aabimec.npz,TDE-H-He,TDE,peculiar,31,15,16,True
+ZTF22aabomyi,events/ZTF22aabomyi.npz,SLSN-II,SNII,peculiar,28,11,17,True
+ZTF22aadeqxu,events/ZTF22aadeqxu.npz,SN Iax,SNI,peculiar,71,34,37,True
+ZTF22aadgsdi,events/ZTF22aadgsdi.npz,SN Ia-CSM,SNI,peculiar,71,33,38,True
+ZTF22aaemvhi,events/ZTF22aaemvhi.npz,SN Ia-CSM,SNI,peculiar,58,27,31,True
+ZTF22aaezdtd,events/ZTF22aaezdtd.npz,SN Ibn,SNI,peculiar,8,5,3,True
+ZTF22aahftli,events/ZTF22aahftli.npz,SN Ibn,SNI,peculiar,20,9,11,True
+ZTF22aahgnxz,events/ZTF22aahgnxz.npz,SN Ia-CSM,SNI,peculiar,3,0,3,False
+ZTF22aahhywm,events/ZTF22aahhywm.npz,SN Ia-SC,SNI,peculiar,114,58,56,True
+ZTF22aaobnru,events/ZTF22aaobnru.npz,SLSN-II,SNII,peculiar,57,24,33,True
+ZTF22aarsjvn,events/ZTF22aarsjvn.npz,SLSN-II,SNII,peculiar,43,26,17,True
+ZTF22aauurbv,events/ZTF22aauurbv.npz,SN II-pec,SNII,peculiar,31,18,13,True
+ZTF22aawxlpc,events/ZTF22aawxlpc.npz,SN Ibn,SNI,peculiar,35,18,17,True
+ZTF22abaiyaf,events/ZTF22abaiyaf.npz,SN Ia-SC,SNI,peculiar,39,18,21,True
+ZTF22abivqkc,events/ZTF22abivqkc.npz,SN II-pec,SNII,peculiar,38,22,16,True
+ZTF22ablxcrh,events/ZTF22ablxcrh.npz,SN Ia-CSM,SNI,peculiar,41,21,20,True
+ZTF22aboawxv,events/ZTF22aboawxv.npz,SN Iax,SNI,peculiar,67,31,36,True
+ZTF22abpyder,events/ZTF22abpyder.npz,SN Iax,SNI,peculiar,40,13,27,True
+ZTF23aaazegi,events/ZTF23aaazegi.npz,SN Ia-CSM,SNI,peculiar,26,13,13,True
+ZTF23aacdnjz,events/ZTF23aacdnjz.npz,SN Ia-CSM,SNI,peculiar,25,10,15,True
+ZTF23aaemtdr,events/ZTF23aaemtdr.npz,SN Icn,SNI,peculiar,7,3,4,False
+ZTF23aagklwb,events/ZTF23aagklwb.npz,SLSN-II,SNII,peculiar,44,24,20,True
+ZTF23aagpjyp,events/ZTF23aagpjyp.npz,SN Ia-CSM,SNI,peculiar,75,37,38,True
+ZTF23aajhtuu,events/ZTF23aajhtuu.npz,SN Ibn,SNI,peculiar,6,3,3,False
+ZTF23aakfysp,events/ZTF23aakfysp.npz,SN Ibn,SNI,peculiar,17,8,9,True
+ZTF23aaltxkt,events/ZTF23aaltxkt.npz,SN II-pec,SNII,peculiar,18,8,10,True
+ZTF23aamsekn,events/ZTF23aamsekn.npz,SN Ia-CSM,SNI,peculiar,51,26,25,True
+ZTF23aanptpp,events/ZTF23aanptpp.npz,SLSN-II,SNII,peculiar,70,35,35,True
+ZTF23aarrwwl,events/ZTF23aarrwwl.npz,SN Ia-SC,SNI,peculiar,34,11,23,True
+ZTF23aasnwva,events/ZTF23aasnwva.npz,SN Ibn,SNI,peculiar,15,5,10,True
+ZTF23aatabje,events/ZTF23aatabje.npz,SN Ia-CSM,SNI,peculiar,40,11,29,True
+ZTF23aaynmrz,events/ZTF23aaynmrz.npz,SN Ia-CSM,SNI,peculiar,52,25,27,True
+ZTF23aazpvbm,events/ZTF23aazpvbm.npz,SN Icn,SNI,peculiar,29,15,14,True
+ZTF23abapoiv,events/ZTF23abapoiv.npz,SN Icn,SNI,peculiar,44,31,13,True
+ZTF23abcvbqq,events/ZTF23abcvbqq.npz,SLSN-II,SNII,peculiar,53,27,26,True
+ZTF23abgnvya,events/ZTF23abgnvya.npz,SN Ia-CSM,SNI,peculiar,41,0,41,False
+ZTF23abhtkba,events/ZTF23abhtkba.npz,SN Ibn,SNI,peculiar,32,17,15,True
+ZTF23abivscl,events/ZTF23abivscl.npz,SN Iax,SNI,peculiar,21,12,9,True
+ZTF23abjacqc,events/ZTF23abjacqc.npz,SN Iax,SNI,peculiar,20,8,12,True
+ZTF23abjjrwv,events/ZTF23abjjrwv.npz,SN Ibn,SNI,peculiar,23,10,13,True
+ZTF23abjunlm,events/ZTF23abjunlm.npz,SN Iax,SNI,peculiar,33,22,11,True
+ZTF23ablkbom,events/ZTF23ablkbom.npz,SN Ia-SC,SNI,peculiar,48,25,23,True
+ZTF23abngbvw,events/ZTF23abngbvw.npz,SN Ibn,SNI,peculiar,18,9,9,True
+ZTF23abojjkh,events/ZTF23abojjkh.npz,SN Iax,SNI,peculiar,22,15,7,True
+ZTF23abprwou,events/ZTF23abprwou.npz,SN Ibn,SNI,peculiar,22,14,8,True
+ZTF23abqygjv,events/ZTF23abqygjv.npz,SLSN-II,SNII,peculiar,16,10,6,True
+ZTF23abrgldj,events/ZTF23abrgldj.npz,SN Ca-rich-Ca,SNI,peculiar,13,0,13,False
+ZTF23absjgta,events/ZTF23absjgta.npz,SN Iax,SNI,peculiar,17,9,8,True
+ZTF24aaartcf,events/ZTF24aaartcf.npz,SN Iax,SNI,peculiar,13,4,9,True
+ZTF24aabuxza,events/ZTF24aabuxza.npz,SN Ca-rich-Ca,SNI,peculiar,4,1,3,False
+ZTF24aabwvws,events/ZTF24aabwvws.npz,SN Ibn,SNI,peculiar,8,5,3,True
+ZTF24aadykqs,events/ZTF24aadykqs.npz,SLSN-II,SNII,peculiar,55,30,23,True
+ZTF24aagnlaw,events/ZTF24aagnlaw.npz,SN Ia-SC,SNI,peculiar,20,14,6,True
+ZTF24aaizdbb,events/ZTF24aaizdbb.npz,SLSN-II,SNII,peculiar,139,69,64,True
+ZTF24aakaiha,events/ZTF24aakaiha.npz,TDE-He,TDE,peculiar,39,21,18,True
+ZTF24aamlalc,events/ZTF24aamlalc.npz,SN Ia-SC,SNI,peculiar,47,32,15,True
+ZTF24aaneoyr,events/ZTF24aaneoyr.npz,SN Ibn,SNI,peculiar,11,8,3,True
+ZTF24aaosgwr,events/ZTF24aaosgwr.npz,SLSN-II,SNII,peculiar,65,29,36,True
+ZTF24aaouput,events/ZTF24aaouput.npz,SLSN-II,SNII,peculiar,50,21,29,True
+ZTF24aauhnqm,events/ZTF24aauhnqm.npz,SN Ibn,SNI,peculiar,3,3,0,False
+ZTF24aawrofs,events/ZTF24aawrofs.npz,SN Iax,SNI,peculiar,51,25,26,True
+ZTF24aaygtcf,events/ZTF24aaygtcf.npz,SN Ia-SC,SNI,peculiar,36,16,18,True
+ZTF24abdhylt,events/ZTF24abdhylt.npz,SLSN-II,SNII,peculiar,60,26,34,True
+ZTF24abdxlus,events/ZTF24abdxlus.npz,SN Ia-CSM,SNI,peculiar,26,21,5,True
+ZTF24abfaake,events/ZTF24abfaake.npz,TDE-H-He,TDE,peculiar,46,15,31,True
+ZTF24abiesnr,events/ZTF24abiesnr.npz,SN Ibn,SNI,peculiar,14,6,5,True
+ZTF24ablzmbm,events/ZTF24ablzmbm.npz,SN Iax,SNI,peculiar,33,13,20,True
+ZTF24abtejwy,events/ZTF24abtejwy.npz,SN Ia-CSM,SNI,peculiar,16,12,4,True
+ZTF24abvftmi,events/ZTF24abvftmi.npz,SLSN-II,SNII,peculiar,43,22,21,True
+ZTF24abyzgqo,events/ZTF24abyzgqo.npz,SN Ibn,SNI,peculiar,8,6,2,True
+ZTF25aaaoxjm,events/ZTF25aaaoxjm.npz,SN Ibn,SNI,peculiar,29,16,13,True
+ZTF25aaaprdb,events/ZTF25aaaprdb.npz,SN Iax,SNI,peculiar,28,15,13,True
+ZTF25aacerkv,events/ZTF25aacerkv.npz,SN Iax,SNI,peculiar,48,23,25,True
+ZTF25aacnkte,events/ZTF25aacnkte.npz,TDE-He,TDE,peculiar,3,2,1,False
+ZTF25aafevnp,events/ZTF25aafevnp.npz,SN Iax,SNI,peculiar,2,0,2,False
+ZTF25aafiibc,events/ZTF25aafiibc.npz,SN Iax,SNI,peculiar,12,10,2,True
+ZTF25aafofcs,events/ZTF25aafofcs.npz,TDE-He,TDE,peculiar,45,21,24,True
+ZTF25aafywpr,events/ZTF25aafywpr.npz,TDE-He,TDE,peculiar,22,11,11,True
+ZTF25aahsvoc,events/ZTF25aahsvoc.npz,SN Ca-rich-Ca,SNI,peculiar,6,5,1,False
+ZTF25aaixrfr,events/ZTF25aaixrfr.npz,SLSN-II,SNII,peculiar,47,23,24,True
+ZTF25aakmhgu,events/ZTF25aakmhgu.npz,SN Ia-CSM,SNI,peculiar,26,17,9,True
+ZTF25aalocpf,events/ZTF25aalocpf.npz,SN Iax,SNI,peculiar,24,22,2,True
+ZTF25aanjafq,events/ZTF25aanjafq.npz,SN Iax,SNI,peculiar,2,0,2,False
+ZTF25aaompnz,events/ZTF25aaompnz.npz,SN Ibn,SNI,peculiar,11,6,5,True
+ZTF25aaozqjf,events/ZTF25aaozqjf.npz,SLSN-II,SNII,peculiar,32,0,32,False
+ZTF25aaprtxj,events/ZTF25aaprtxj.npz,SLSN-II,SNII,peculiar,36,19,17,True
+ZTF25aaqvqvd,events/ZTF25aaqvqvd.npz,SLSN-II,SNII,peculiar,201,85,76,True
+ZTF25aastkua,events/ZTF25aastkua.npz,SN Iax,SNI,peculiar,143,66,77,True
+ZTF25aatkssj,events/ZTF25aatkssj.npz,SN Iax,SNI,peculiar,11,3,8,True
+ZTF25aatmfzy,events/ZTF25aatmfzy.npz,SLSN-II,SNII,peculiar,61,24,37,True
+ZTF25aawvhce,events/ZTF25aawvhce.npz,SN Iax,SNI,peculiar,29,13,16,True
+ZTF25aaxwrva,events/ZTF25aaxwrva.npz,SN Ibn,SNI,peculiar,29,15,14,True
+ZTF25abecbib,events/ZTF25abecbib.npz,SN Ibn,SNI,peculiar,79,42,37,True
+ZTF25abeqaoy,events/ZTF25abeqaoy.npz,SLSN-II,SNII,peculiar,53,23,30,True
+ZTF25abgkhcw,events/ZTF25abgkhcw.npz,SLSN-II,SNII,peculiar,66,33,33,True
+ZTF25abkeyrv,events/ZTF25abkeyrv.npz,SN Iax,SNI,peculiar,33,15,18,True
+ZTF25ablxhsq,events/ZTF25ablxhsq.npz,TDE-H-He,TDE,peculiar,114,51,48,True
+ZTF25abqkwce,events/ZTF25abqkwce.npz,SN Ia-SC,SNI,peculiar,85,44,41,True
+ZTF25abrpnbo,events/ZTF25abrpnbo.npz,SN Ia-CSM,SNI,peculiar,20,12,8,True
+ZTF25abuovxv,events/ZTF25abuovxv.npz,TDE-featureless,TDE,peculiar,52,27,25,True
+ZTF25abxvhmk,events/ZTF25abxvhmk.npz,TDE-H-He,TDE,peculiar,45,26,19,True
+ZTF25acbzneq,events/ZTF25acbzneq.npz,SN Iax,SNI,peculiar,4,1,3,False
+ZTF25acelgwl,events/ZTF25acelgwl.npz,SLSN-II,SNII,peculiar,78,40,31,True
+ZTF25acfyeke,events/ZTF25acfyeke.npz,TDE-featureless,TDE,peculiar,36,19,17,True
+ZTF25achwzws,events/ZTF25achwzws.npz,SLSN-II,SNII,peculiar,28,13,15,True
+ZTF25acipmxl,events/ZTF25acipmxl.npz,SN Ibn,SNI,peculiar,4,2,2,False

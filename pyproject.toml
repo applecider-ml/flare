@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flare-transients"
-version = "1.0.0"
+version = "2.0.0"
 description = "Feature-based Light-curve Aggregated Ranking Ensemble — physics features + gradient-boosted trees for ZTF photometric transient classification with conformal uncertainty"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,9 @@ dependencies = [
     "pyarrow>=12",
 ]
 
+[project.scripts]
+flare = "flare:_cli"
+
 [project.optional-dependencies]
 train = ["optuna>=3.5"]
 figures = ["matplotlib>=3.7", "shap>=0.44"]
@@ -30,4 +33,4 @@ packages = ["flare"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-flare = ["../models/*.txt", "../models/*.json"]
+flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*"]

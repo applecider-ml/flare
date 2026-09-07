@@ -1,0 +1,291 @@
+<title>FLARE inside BOOM</title>
+<style>
+:root {
+  --bg:oklch(0.141 0.005 285.823); --card:oklch(0.21 0.006 285.885); --fg:oklch(0.985 0 0);
+  --muted:oklch(0.274 0.006 286.033); --mutedfg:oklch(0.705 0.015 286.067);
+  --border:oklch(1 0 0 / 10%); --sidebar:oklch(0.21 0.006 285.885);
+  --ztf:oklch(0.6 0.142 253.497); --radius:0.5rem;
+}
+:root[data-theme="light"] {
+  --bg:oklch(1 0 0); --card:oklch(1 0 0); --fg:oklch(0.141 0.005 285.823);
+  --muted:oklch(0.967 0.001 286.375); --mutedfg:oklch(0.552 0.016 285.938);
+  --border:oklch(0.92 0.004 286.32); --sidebar:oklch(0.985 0 0);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:oklch(1 0 0); --card:oklch(1 0 0); --fg:oklch(0.141 0.005 285.823);
+    --muted:oklch(0.967 0.001 286.375); --mutedfg:oklch(0.552 0.016 285.938);
+    --border:oklch(0.92 0.004 286.32); --sidebar:oklch(0.985 0 0);
+  }
+}
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--fg); line-height:1.5;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:14px }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace }
+.dim { color:var(--mutedfg) }
+.wrap { display:flex; min-height:100vh }
+/* icon rail: SIDEBAR_WIDTH_ICON = 2.5rem, collapsed by default */
+.rail { width:2.5rem; flex:0 0 2.5rem; background:var(--sidebar);
+  display:flex; flex-direction:column; align-items:center; gap:.4rem; padding:.5rem 0 }
+.brand { font-size:.85rem; text-align:center; line-height:1.1; margin-bottom:.5rem }
+.ic { width:1.75rem; height:1.75rem; display:grid; place-items:center; border-radius:.375rem;
+  color:var(--mutedfg) }
+.ic svg { width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round }
+.rsep { width:1.25rem; height:1px; background:var(--border); margin:.2rem 0 }
+/* SidebarInset: m-2 ml-0, rounded-xl, shadow */
+.inset { flex:1; margin:.5rem .5rem .5rem 0; background:var(--bg);
+  border:1px solid var(--border); border-radius:.75rem; overflow:hidden;
+  box-shadow:0 1px 2px 0 rgb(0 0 0/.05) }
+.sheader { display:flex; align-items:center; gap:.5rem; height:3rem;
+  padding:0 1rem; border-bottom:1px solid var(--border) }
+.sheader h1 { font-size:1rem; font-weight:500; margin:0 }
+.vsep { width:1px; height:1rem; background:var(--border) }
+.crumb { margin-left:auto; font-size:.78rem; color:var(--mutedfg) }
+.note { margin:.75rem 1rem 0; padding:.55rem .8rem; border:1px dashed var(--border);
+  border-radius:.5rem; font-size:.78rem; color:var(--mutedfg) }
+.note b { color:var(--fg) }
+/* card grid: grid-cols-1 gap-4 px-4 lg:px-6, @xl 2, @5xl 4 */
+.grid { display:grid; grid-template-columns:1fr; gap:1rem; padding:1rem 1.5rem 1.5rem }
+@media (min-width:56rem) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)) } }
+@media (min-width:80rem) { .grid { grid-template-columns:repeat(4,minmax(0,1fr)) }
+  .span2 { grid-column:span 2 } }
+.card { background:var(--card); border:1px solid var(--border); border-radius:.75rem;
+  padding:1.25rem 0; box-shadow:0 1px 2px 0 rgb(0 0 0/.05); min-width:0 }
+.chead { display:flex; align-items:center; justify-content:space-between;
+  gap:.5rem; padding:0 1.25rem .75rem }
+.chead h3 { font-size:1.05rem; font-weight:600; margin:0; line-height:1 }
+.cbody { padding:0 1.25rem }
+.sel, .pill { font-size:.7rem; color:var(--mutedfg); border:1px solid var(--border);
+  border-radius:.375rem; padding:.1rem .45rem }
+.tabs { display:grid; grid-template-columns:1fr 1fr; gap:3px; background:var(--muted);
+  border-radius:.5rem; padding:3px; margin-bottom:.6rem }
+.tab { text-align:center; font-size:.75rem; font-weight:500; padding:.25rem;
+  border-radius:.375rem; color:var(--mutedfg) }
+.tab.on { background:var(--card); color:var(--fg); box-shadow:0 1px 2px 0 rgb(0 0 0/.05) }
+.fam { font-size:.75rem; font-weight:500; color:var(--mutedfg); margin-bottom:.25rem }
+.tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem }
+.tile { padding:.5rem .625rem; border-radius:.5rem; color:#fff; display:flex;
+  flex-direction:column; min-width:0 }
+.tile.off { background:var(--muted); color:var(--mutedfg) }
+.trow { display:flex; justify-content:space-between; margin-bottom:.1rem }
+.tname { font-size:.75rem; font-weight:600; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis }
+.trow2 { display:flex; align-items:flex-end; justify-content:space-between; gap:.4rem }
+.tpct { font-size:1.25rem; font-weight:700; font-variant-numeric:tabular-nums;
+  line-height:1 }
+.tsub { font-size:.7rem; opacity:.9 }
+.foot { font-size:.72rem; color:var(--mutedfg); margin:.7rem 0 0 }
+.lc { width:100%; height:auto; display:block }
+.gl { stroke:var(--border) }
+.tick { font-size:9px; fill:var(--mutedfg) }
+.axl { font-size:9px; fill:var(--mutedfg) }
+.acc { border-bottom:1px solid var(--border) }
+.acc summary { display:flex; align-items:center; justify-content:space-between;
+  gap:.5rem; padding:.5rem 0; cursor:pointer; font-size:.82rem;
+  font-family:ui-monospace,Menlo,monospace }
+.acc.empty { opacity:.4 }
+.acc.empty summary { cursor:not-allowed }
+.badge { font-size:.65rem; border:1px solid var(--border); border-radius:99px;
+  padding:.05rem .45rem; color:var(--mutedfg); font-family:inherit }
+.xt { width:100%; border-collapse:collapse; margin:0 0 .5rem }
+.xt td { padding:.2rem 0; font-size:.78rem }
+.xt .k { color:var(--mutedfg) }
+.xt .v { text-align:right; font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,Menlo,monospace }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem }
+@media (max-width:640px) { .two { grid-template-columns:1fr } }
+.lab { font-size:.72rem; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--mutedfg); margin-bottom:.35rem }
+.setbox { font-family:ui-monospace,Menlo,monospace; font-size:.95rem;
+  background:var(--muted); border-radius:.5rem; padding:.4rem .6rem; margin-bottom:.5rem }
+.err { width:100%; border-collapse:collapse }
+.err td { padding:.18rem 0; font-size:.78rem; color:var(--mutedfg) }
+.err td.n { text-align:right; color:var(--fg); font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,Menlo,monospace }
+.pv { display:grid; grid-template-columns:3.4rem 1fr 2.6rem; align-items:center;
+  gap:.4rem; margin:.15rem 0; font-size:.78rem }
+.pk { color:var(--mutedfg) }
+.pv.hit .pk { color:var(--fg); font-weight:600 }
+.pb { height:.55rem; background:var(--muted); border-radius:3px; overflow:hidden }
+.pb i { display:block; height:100%; background:var(--mutedfg); opacity:.5 }
+.pv.hit .pb i { background:var(--ztf); opacity:1 }
+.pn { text-align:right; font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,Menlo,monospace; color:var(--mutedfg) }
+.guar { background:var(--muted); border-radius:.5rem; padding:.5rem .7rem; margin-bottom:.6rem }
+.gnum { font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1 }
+.pm { font-size:.95rem; font-weight:500; color:var(--mutedfg) }
+.gsub { font-size:.72rem; color:var(--mutedfg); margin-top:.15rem }
+.anom { background:var(--muted); border-radius:.5rem; padding:.55rem .7rem;
+  border-left:3px solid #10b981 }
+.anom.alert { border-left-color:#ef4444 }
+.anum { font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1 }
+.anom.alert .anum { color:#ef4444 }
+.asub { font-size:.72rem; color:var(--mutedfg); margin-top:.1rem }
+.gauge { margin-top:.1rem }
+.gtrack { position:relative; height:.55rem; background:var(--muted); border-radius:3px }
+.gfill { height:100%; background:var(--ztf); border-radius:3px }
+.gthr { position:absolute; top:-3px; bottom:-3px; left:99%; width:2px; background:#ef4444 }
+.gcap { display:flex; justify-content:space-between; font-size:.72rem;
+  color:var(--mutedfg); margin-top:.25rem }
+.gcap b { color:var(--fg); font-variant-numeric:tabular-nums }
+.gcap b.hot { color:#ef4444 }
+.verdict { margin-top:.8rem; padding:.5rem .7rem; border-radius:.5rem;
+  font-size:.78rem; background:var(--muted) }
+.verdict.alert { border-left:3px solid #ef4444 }
+.verdict.ok { border-left:3px solid #10b981 }
+.hdr-kv { display:grid; grid-template-columns:auto 1fr; gap:.2rem .8rem; font-size:.8rem }
+.hdr-kv .k { color:var(--mutedfg) }
+.hdr-kv .v { font-family:ui-monospace,Menlo,monospace }
+.minis { display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:0 1.5rem 1.5rem }
+@media (max-width:640px) { .minis { grid-template-columns:1fr } }
+.mini { background:var(--card); border:1px solid var(--border); border-radius:.75rem;
+  padding:.9rem 1rem }
+.mhead { display:flex; justify-content:space-between; gap:.5rem; margin-bottom:.5rem;
+  font-size:.82rem }
+.mrow { display:flex; justify-content:space-between; gap:.6rem; font-size:.78rem;
+  padding:.12rem 0 }
+.mk { color:var(--mutedfg) }
+.mv { text-align:right }
+.tail { padding:0 1.5rem 2rem; font-size:.78rem; color:var(--mutedfg); max-width:75ch }
+.tail code { font-family:ui-monospace,Menlo,monospace; font-size:.74rem }
+</style>
+<div class="wrap">
+  <nav class="rail">
+    <div class="brand">𒁀𒁀<br>𒀯</div>
+    <div class="ic" title="Query"><svg viewBox="0 0 24 24"><path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12M20 20l-4.5-4.5"/></svg></div><div class="ic" title="Dashboard"><svg viewBox="0 0 24 24"><path d="M4 19h16M7 16V9M12 16V5M17 16v-5"/></svg></div><div class="rsep"></div><div class="ic" title="Kafka Documentation"><svg viewBox="0 0 24 24"><path d="M9 5h6v4H9zM3 15h6v4H3zM15 15h6v4h-6zM12 9v3M6 15v-3h12v3"/></svg></div><div class="ic" title="API Documentation"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2M4 6v12c0 1.1 3.6 2 8 2s8-.9 8-2V6"/></svg></div><div class="rsep"></div><div class="ic" title="Acknowledgments"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/></svg></div><div class="ic" title="Get Help"><svg viewBox="0 0 24 24"><path d="M12 19h.01M9.1 9a3 3 0 1 1 4 2.8c-.8.4-1.1 1.2-1.1 2.2"/></svg></div>
+  </nav>
+  <div class="inset">
+    <div class="sheader">
+      <span class="dim">☰</span><div class="vsep"></div><h1>Babamul</h1>
+      <span class="crumb mono">/objects/ztf/ZTF19acbzgog</span>
+    </div>
+    <div class="note"><b>Design proposal, not a live page.</b> The chrome, the card grid,
+      the “ML Scores” tiles, the band colours and every token here are taken from
+      boom-astro/boom’s own frontend source; the FLARE numbers are real outputs of the
+      shipped <code>bts6</code> models. Nothing was screenshotted and no BOOM classifier
+      score is invented.</div>
+    <div class="grid">
+      <section class="card">
+        <div class="chead"><h3 class="mono">ZTF19acbzgog</h3><span class="pill">ZTF</span></div>
+        <div class="cbody hdr-kv">
+          <span class="k">IAU</span><span class="v">AT2019rsi</span>
+          <span class="k">RA</span><span class="v">00:42:23.53</span>
+          <span class="k">Dec</span><span class="v">+41:11:52.2</span>
+          <span class="k">detections</span><span class="v">30</span>
+          <span class="k">peak mag</span><span class="v">17.91</span>
+          <span class="k">spectroscopic</span><span class="v">classical nova — outside the taxonomy</span>
+        </div>
+      </section>
+      <section class="card span2">
+        <div class="chead"><h3>Lightcurve</h3><span class="pill">ZTF g, r</span></div>
+        <div class="cbody"><svg viewBox="0 0 560 210" class="lc"><line x1="44" y1="14.0" x2="548" y2="14.0" class="gl"/><text x="38" y="17.0" class="tick" text-anchor="end">17.7</text><line x1="44" y1="55.5" x2="548" y2="55.5" class="gl"/><text x="38" y="58.5" class="tick" text-anchor="end">18.3</text><line x1="44" y1="97.0" x2="548" y2="97.0" class="gl"/><text x="38" y="100.0" class="tick" text-anchor="end">19.0</text><line x1="44" y1="138.5" x2="548" y2="138.5" class="gl"/><text x="38" y="141.5" class="tick" text-anchor="end">19.6</text><line x1="44" y1="180.0" x2="548" y2="180.0" class="gl"/><text x="38" y="183.0" class="tick" text-anchor="end">20.2</text><text x="44" y="200" class="tick" text-anchor="middle">58761</text><text x="212" y="200" class="tick" text-anchor="middle">58787</text><text x="380" y="200" class="tick" text-anchor="middle">58812</text><text x="548" y="200" class="tick" text-anchor="middle">58837</text><text x="280" y="209.5" class="axl" text-anchor="middle">MJD</text><text x="11" y="105" class="axl" text-anchor="middle" transform="rotate(-90 11 105)">magnitude</text><line x1="62.8" y1="26.4" x2="62.8" y2="33.7" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="62.8" cy="30.1" r="3" fill="#38b000ea"/><line x1="69.4" y1="80.4" x2="69.4" y2="92.4" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="69.4" cy="86.4" r="3" fill="#38b000ea"/><line x1="82.7" y1="83.5" x2="82.7" y2="118.9" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="82.7" cy="101.2" r="3" fill="#38b000ea"/><line x1="89.3" y1="102.6" x2="89.3" y2="131.1" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="89.3" cy="116.8" r="3" fill="#38b000ea"/><line x1="96.0" y1="106.2" x2="96.0" y2="138.6" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="96.0" cy="122.4" r="3" fill="#38b000ea"/><line x1="255.6" y1="106.9" x2="255.6" y2="127.1" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="255.6" cy="117.0" r="3" fill="#38b000ea"/><line x1="375.5" y1="101.6" x2="375.5" y2="127.3" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="375.5" cy="114.5" r="3" fill="#38b000ea"/><line x1="548.0" y1="101.9" x2="548.0" y2="114.2" stroke="#38b000ea" stroke-width="1" opacity=".55"/><circle cx="548.0" cy="108.1" r="3" fill="#38b000ea"/><line x1="44.0" y1="81.2" x2="44.0" y2="91.1" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="44.0" cy="86.2" r="3" fill="#ef233be7"/><line x1="69.2" y1="59.0" x2="69.2" y2="68.3" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="69.2" cy="63.7" r="3" fill="#ef233be7"/><line x1="82.5" y1="75.3" x2="82.5" y2="101.1" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="82.5" cy="88.2" r="3" fill="#ef233be7"/><line x1="89.1" y1="104.2" x2="89.1" y2="127.3" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="89.1" cy="115.8" r="3" fill="#ef233be7"/><line x1="102.4" y1="103.8" x2="102.4" y2="132.8" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="102.4" cy="118.3" r="3" fill="#ef233be7"/><line x1="109.1" y1="104.4" x2="109.1" y2="129.9" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="109.1" cy="117.2" r="3" fill="#ef233be7"/><line x1="142.3" y1="112.5" x2="142.3" y2="129.6" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="142.3" cy="121.0" r="3" fill="#ef233be7"/><line x1="149.0" y1="125.3" x2="149.0" y2="158.2" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="149.0" cy="141.8" r="3" fill="#ef233be7"/><line x1="162.3" y1="128.7" x2="162.3" y2="153.0" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="162.3" cy="140.8" r="3" fill="#ef233be7"/><line x1="175.6" y1="120.7" x2="175.6" y2="154.9" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="175.6" cy="137.8" r="3" fill="#ef233be7"/><line x1="188.9" y1="147.3" x2="188.9" y2="180.6" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="188.9" cy="163.9" r="3" fill="#ef233be7"/><line x1="202.2" y1="84.8" x2="202.2" y2="97.8" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="202.2" cy="91.3" r="3" fill="#ef233be7"/><line x1="215.5" y1="70.7" x2="215.5" y2="87.1" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="215.5" cy="78.9" r="3" fill="#ef233be7"/><line x1="222.1" y1="57.5" x2="222.1" y2="70.1" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="222.1" cy="63.8" r="3" fill="#ef233be7"/><line x1="228.8" y1="51.7" x2="228.8" y2="63.4" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="228.8" cy="57.6" r="3" fill="#ef233be7"/><line x1="235.6" y1="80.6" x2="235.6" y2="94.3" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="235.6" cy="87.4" r="3" fill="#ef233be7"/><line x1="248.9" y1="97.4" x2="248.9" y2="114.3" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="248.9" cy="105.9" r="3" fill="#ef233be7"/><line x1="255.3" y1="111.3" x2="255.3" y2="135.4" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="255.3" cy="123.4" r="3" fill="#ef233be7"/><line x1="375.2" y1="102.3" x2="375.2" y2="115.7" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="375.2" cy="109.0" r="3" fill="#ef233be7"/><line x1="382.4" y1="107.3" x2="382.4" y2="120.2" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="382.4" cy="113.8" r="3" fill="#ef233be7"/><line x1="395.1" y1="113.9" x2="395.1" y2="133.6" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="395.1" cy="123.7" r="3" fill="#ef233be7"/><line x1="395.4" y1="112.1" x2="395.4" y2="133.4" stroke="#ef233be7" stroke-width="1" opacity=".55"/><circle cx="395.4" cy="122.8" r="3" fill="#ef233be7"/><circle cx="488" cy="22" r="3.5" fill="#38b000ea"/><text x="497" y="25" class="tick">ZTF g</text><circle cx="488" cy="36" r="3.5" fill="#ef233be7"/><text x="497" y="39" class="tick">ZTF r</text></svg></div>
+      </section>
+      
+<section class="card">
+  <div class="chead"><h3>ML Scores</h3><span class="sel">FLARE ▾</span></div>
+  <div class="cbody">
+    <div class="tabs"><span class="tab on">Current</span><span class="tab">Temporal</span></div>
+    <div class="fam">FLARE</div>
+    <div class="tiles"><div class="tile" style="background:#f59e0b"><div class="trow"><span class="tname">SN Ia</span></div><div class="trow2"><span class="tpct">50%</span><span class="tsub"></span></div></div><div class="tile" style="background:#f59e0b"><div class="trow"><span class="tname">SN CC</span></div><div class="trow2"><span class="tpct">44%</span><span class="tsub"></span></div></div><div class="tile" style="background:#ef4444"><div class="trow"><span class="tname">SLSN</span></div><div class="trow2"><span class="tpct">1%</span><span class="tsub"></span></div></div><div class="tile" style="background:#ef4444"><div class="trow"><span class="tname">AGN</span></div><div class="trow2"><span class="tpct">0%</span><span class="tsub"></span></div></div><div class="tile" style="background:#ef4444"><div class="trow"><span class="tname">TDE</span></div><div class="trow2"><span class="tpct">1%</span><span class="tsub"></span></div></div><div class="tile" style="background:#ef4444"><div class="trow"><span class="tname">CV</span></div><div class="trow2"><span class="tpct">4%</span><span class="tsub"></span></div></div></div>
+    <div class="fam" style="margin-top:.6rem">BOOM classifiers</div>
+    <div class="tiles"><div class="tile off"><div class="trow"><span class="tname">drb</span></div><div class="trow2"><span class="tpct">–</span></div></div><div class="tile off"><div class="trow"><span class="tname">btsbot</span></div><div class="trow2"><span class="tpct">–</span></div></div><div class="tile off"><div class="trow"><span class="tname">acai_h</span></div><div class="trow2"><span class="tpct">–</span></div></div><div class="tile off"><div class="trow"><span class="tname">sgscore1</span></div><div class="trow2"><span class="tpct">–</span></div></div></div>
+    <p class="foot">Tiles follow the widget's own rule: filled block, three-bucket
+      colour at 0.7 and 0.4, integer per cent. BOOM's own classifiers are blank
+      here because this page was rendered offline from the FLARE models alone.</p>
+  </div>
+</section>
+      
+<section class="card span2">
+  <div class="chead"><h3>FLARE <span class="dim">· photometric classification</span></h3>
+    <span class="pill">bts6</span></div>
+  <div class="cbody">
+    <div class="two">
+      <div>
+        <div class="lab">prediction set</div>
+        <div class="setbox">{SN CC, SLSN}</div>
+        <div class="guar">
+          <div class="gnum">90% <span class="pm">&plusmn; 10%</span></div>
+          <div class="gsub">target coverage &plusmn; the error the set admits
+            (&alpha; = 0.10, class-conditional)</div>
+        </div>
+        <table class="err">
+          <tr><td>measured out of fold, SN Ia
+              <span class="dim">n = 7159</span></td>
+              <td class="n">90.6% &plusmn; 0.3%</td></tr>
+          <tr><td>credibility <span class="dim">max p — matches any class at all</span></td>
+              <td class="n">0.143</td></tr>
+          <tr><td>confidence <span class="dim">1 &minus; second p</span></td>
+              <td class="n">0.875</td></tr>
+          <tr><td>p-value floor <span class="dim">1/(n<sub>cal</sub>+1)</span></td>
+              <td class="n">0.003</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="lab">conformal p-values <span class="dim">set = {p &gt; &alpha;}</span></div>
+        <div class="pv"><span class="pk">SN Ia</span><span class="pb"><i style="width:2.4%"></i></span><span class="pn">0.024</span></div><div class="pv hit"><span class="pk">SN CC</span><span class="pb"><i style="width:14.3%"></i></span><span class="pn">0.143</span></div><div class="pv hit"><span class="pk">SLSN</span><span class="pb"><i style="width:12.5%"></i></span><span class="pn">0.125</span></div><div class="pv"><span class="pk">AGN</span><span class="pb"><i style="width:5.3%"></i></span><span class="pn">0.053</span></div><div class="pv"><span class="pk">TDE</span><span class="pb"><i style="width:8.3%"></i></span><span class="pn">0.083</span></div><div class="pv"><span class="pk">CV</span><span class="pb"><i style="width:8.5%"></i></span><span class="pn">0.085</span></div>
+        <div class="lab" style="margin-top:.8rem">is it an anomaly?</div>
+        <div class="anom alert">
+          <div class="anum">30.7%<span class="pm"> (23&ndash;41%)</span></div>
+          <div class="asub">probability it is out of taxonomy, at the benchmark&rsquo;s
+            own 3.1% base rate</div>
+          <table class="err" style="margin-top:.4rem">
+            <tr><td>likelihood ratio <span class="dim">prior-free</span></td>
+                <td class="n">13.7&times;</td></tr>
+            <tr><td>novelty p-value <span class="dim">1 in 315 known-class objects
+                is this extreme</span></td><td class="n">0.0032</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="lab" style="margin-top:.9rem">anomaly energy
+      <span class="dim">· own 181-column space, red mark = 1% false-alarm budget</span></div>
+    <div class="gauge"><div class="gtrack"><div class="gfill" style="width:99.7%"></div>
+      <div class="gthr"></div></div>
+      <div class="gcap"><span>percentile against the known-class stream</span>
+        <b class="hot">99.7</b></div></div>
+    <div class="verdict alert">ANOMALY · the argmax class is excluded by its own prediction set and the energy clears the 1% false-alarm threshold — sent to the review queue</div>
+  </div>
+</section>
+      <section class="card span2">
+        <div class="chead"><h3>Cross-matches</h3></div>
+        <div class="cbody"><details class="acc" open><summary><span>PS1_DR2 (host)</span><span class="badge">1 match</span></summary><table class="xt"><tr><td class="k">sep [arcsec]</td><td class="v">2.13</td></tr><tr><td class="k">rKronMag</td><td class="v">17.88</td></tr><tr><td class="k">iKronMag</td><td class="v">18.80</td></tr><tr><td class="k">g-r</td><td class="v">nan</td></tr></table></details><details class="acc"><summary><span>AllWISE</span><span class="badge">1 match</span></summary><table class="xt"><tr><td class="k">sep [arcsec]</td><td class="v">6.10</td></tr><tr><td class="k">W1</td><td class="v">12.76</td></tr><tr><td class="k">W1-W2</td><td class="v">-0.55</td></tr></table></details><div class="acc empty"><summary><span>Gaia_DR3</span><span class="badge">0 matches</span></summary></div><div class="acc empty"><summary><span>LS_DR10_PHOTOZ</span><span class="badge">0 matches</span></summary></div><div class="acc empty"><summary><span>PS1_DR2 (at position)</span><span class="badge">0 matches</span></summary></div></div>
+      </section>
+    </div>
+    <div class="minis">
+<section class="mini">
+  <div class="mhead"><span class="mono">ZTF25abhoijc</span><span class="dim">SN Ia (BTS)</span></div>
+  <div class="mrow"><span class="mk">FLARE</span><span class="mv">SN Ia</span></div>
+  <div class="mrow"><span class="mk">set (&alpha;=0.10)</span><span class="mv mono">{SN Ia}</span></div>
+  <div class="mrow"><span class="mk">coverage</span><span class="mv">90% &plusmn; 10% target · measured 90.6% &plusmn; 0.3%</span></div>
+  <div class="mrow"><span class="mk">credibility</span><span class="mv">0.457</span></div>
+  <div class="mrow"><span class="mk">P(anomaly)</span><span class="mv">2.1% (2&ndash;2%) · LR 0.6&times;</span></div>
+</section>
+<section class="mini">
+  <div class="mhead"><span class="mono">ZTF22abkfhua</span><span class="dim">TDE (BTS)</span></div>
+  <div class="mrow"><span class="mk">FLARE</span><span class="mv">TDE</span></div>
+  <div class="mrow"><span class="mk">set (&alpha;=0.10)</span><span class="mv mono">{TDE}</span></div>
+  <div class="mrow"><span class="mk">coverage</span><span class="mv">90% &plusmn; 10% target · measured 91.2% &plusmn; 3.4%</span></div>
+  <div class="mrow"><span class="mk">credibility</span><span class="mv">0.750</span></div>
+  <div class="mrow"><span class="mk">P(anomaly)</span><span class="mv">1.5% (1&ndash;2%) · LR 0.5&times;</span></div>
+</section></div>
+    <div class="tail">
+      <p><b>What the current UI could and could not show.</b> The six class scores drop
+      straight into the existing “ML Scores” card — but only after
+      <code>mapAlertClassifications</code> in <code>ClassificationsV2.tsx</code> stops
+      being a hard-coded whitelist (<code>acai_*</code>, <code>btsbot</code>,
+      <code>drb</code>, <code>reliability</code>, <code>sgscore1</code>,
+      <code>LSPSC</code>), which silently drops every other key. The prediction set, the
+      error it admits and the anomaly energy have no home in the widget at all: it draws
+      one number per classifier with a three-bucket colour and no threshold lines, so the
+      FLARE card above is a new component.</p>
+      <p><b>Pipeline fit.</b> BOOM already runs its models as ONNX in enrichment workers
+      (<code>ORT_DYLIB_PATH</code>, results written back to MongoDB) and crossmatches
+      static catalogues per alert, which is exactly what FLARE consumes: PS1 host and
+      pre-outburst counterpart, Legacy Surveys photo-z, Gaia, AllWISE. The classifier is
+      LightGBM and converts to ONNX; the anomaly layer reads its own narrower
+      181-column space.</p>
+    </div>
+  </div>
+</div>

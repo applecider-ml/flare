@@ -1,31 +1,70 @@
 # FLARE
 
 **Feature-based Light-curve Aggregated Ranking Ensemble** — a physics-features +
-gradient-boosted-trees classifier for ZTF photometric transients
-(SNI · SNII · CV · AGN · TDE), with class-conditional conformal uncertainty.
+gradient-boosted-trees classifier for ZTF photometric transients, with
+class-conditional conformal uncertainty and an anomaly layer for what falls
+outside the taxonomy.
 
-FLARE extracts 160 physically-motivated features from each multi-band light curve
-(variability statistics, Bazin transient fits, colour evolution, cadence) and
-classifies them with a LightGBM ensemble. It is designed for production use:
-well-calibrated probabilities, guaranteed per-class conformal coverage,
-interpretable decisions, CPU-minutes to train, and a single model file to deploy.
+FLARE extracts 160 physically-motivated features from each multi-band light
+curve (variability statistics, Bazin transient fits, colour evolution, cadence),
+optionally joins external context available at alert time (Pan-STARRS host
+photometry; a Legacy-Surveys photo-z pseudo-absolute magnitude; Gaia DR3 and
+AllWISE point-source context), and classifies
+with LightGBM. Designed for production: calibrated probabilities, guaranteed
+per-class conformal coverage, interpretable decisions, CPU-minutes to train,
+plain model files to deploy.
 
-## Performance
+## Two schemes, one switch
 
-Five-fold cross-validation over 13,153 quality-filtered ZTF objects:
+| scheme | classes | model | when |
+|---|---|---|---|
+| **`bts6`** (default) | SN Ia · SN CC · SLSN · AGN · TDE · CV | 5-way top level + SLSN head; host, photo-z, Gaia/WISE, and PS1-counterpart aware | the paper's headline; new work |
+| `broad5` | SNI · SNII · CV · AGN · TDE | flat LightGBM | legacy AppleCiDEr taxonomy; tutorial notebooks |
 
-| Metric | FLARE |
-|---|---|
-| accuracy | 0.949 ± 0.005 |
-| balanced accuracy | 0.848 ± 0.031 |
-| macro F1 | 0.863 ± 0.025 |
-| macro AUPRC | 0.905 ± 0.032 |
-| ECE (calibration) | 0.013 ± 0.005 |
+Selection: `flare.load_classifier("bts6")`, the `FLARE_SCHEME` environment
+variable, or the default in `flare/config.py`.
 
-Per-class (same protocol): SNI F1 0.96 · SNII 0.84 · CV 0.88 · AGN 0.98 ·
-TDE precision 0.73 / recall 0.62 (65 events). Conformal prediction sets meet the
-90% coverage target for **every** class, including TDE. A class-weighted variant
-raises TDE recall to 0.74 for rare-transient-focused deployments.
+## Performance (bts6, five-fold out of fold, 10,497 BTS objects)
+
+| Metric | light curve only | + host | + Gaia/WISE | + PS1 counterpart |
+|---|---|---|---|---|
+| accuracy | 0.899 ± 0.005 | 0.918 ± 0.005 | 0.922 ± 0.005 | **0.924 ± 0.001** |
+| balanced accuracy | 0.713 ± 0.034 | 0.799 ± 0.021 | 0.811 ± 0.026 | **0.826 ± 0.033** |
+| macro F1 | 0.723 ± 0.034 | 0.804 ± 0.012 | 0.820 ± 0.017 | **0.832 ± 0.016** |
+
+Per-class F1 in the adopted configuration: SN Ia 0.96 · SN CC 0.85 · SLSN 0.53 ·
+AGN 0.90 · TDE 0.81 · CV 0.94. The anomaly layer deliberately reads a narrower
+context (features + host + Gaia/WISE; `models/bts6/ad_space.txt`) — M_pseudo
+and the counterpart block help classification but harm blind detection. Mondrian conformal sets hold the 90% target
+(marginal 0.910; the 68-object TDE class sits at 0.853, within binomial noise),
+delivering the entangled classes as small candidate sets
+(SLSN ≈ 2.1 labels) rather than silent misclassifications. Supervised detection
+of a trained rare class reaches 94% (TDE) / 86% (novae) at a 1% false-alarm
+budget. The `broad5` numbers of the original release are in `models/README.md`.
+
+## Command line
+
+```bash
+flare report ZTF19acbzgog ZTF22abkfhua -o report.html   # a self-contained console page
+flare predict ZTF19acbzgog                              # the same as JSON
+```
+
+Photometry comes from BOOM when `BOOM_URL` and credentials are set and from
+ALeRCE otherwise; the host, photo-z, Gaia/WISE and pre-outburst-counterpart
+blocks are queried per position. Anything unavailable stays missing — the
+models are trained with each block randomly blanked, so absence degrades
+gracefully instead of being misread. `docs/flare_console.html` is what the
+report looks like.
+
+## Repository layout
+
+    flare/        the package (features, models, conformal, fetch, context)
+    models/       pretrained weights for both schemes
+    benchmark/    the BTS benchmark: splits, features, external context
+                  (light curves via Zenodo or BOOM re-fetch — see
+                  benchmark/DATASET.md)
+    paper/        every analysis script behind the paper's numbers and figures
+    notebooks/    tutorials, including the ZTF summer-school session
 
 ## Install
 
@@ -39,25 +78,21 @@ deep-learning frameworks.
 ## Predict
 
 ```python
-from flare import FlareClassifier
+import flare
+clf = flare.load_classifier()                    # bts6 by default
 
-clf = FlareClassifier.from_pretrained()          # bundled weights + conformal
-proba = clf.predict_proba_from_files(["ZTF20xxx.npz"])   # (N, 5)
-label = clf.predict_from_files(["ZTF20xxx.npz"])         # ['TDE']
-sets  = clf.prediction_sets_from_files(["ZTF20xxx.npz"]) # [['TDE','AGN']] (90% coverage)
+labels = clf.predict_from_files(["ZTF21abcdxyz.npz"])
+sets   = clf.prediction_sets_from_files(["ZTF21abcdxyz.npz"])   # conformal
+energy = clf.anomaly_energy(clf.features_from_files([...]))     # OOD score
+
+# everything from an object id (BOOM if configured, else public ALeRCE):
+from flare.fetch import fetch_events
+from flare.context import context_features        # host + photo-z + Gaia/WISE + PS1 counterpart
 ```
 
-Command line:
-
-```bash
-python scripts/predict.py --npz-dir path/to/objects --out preds.csv
-python scripts/predict.py --manifest manifest_test.csv --data-dir path/to/data --out preds.csv
-```
-
-Each input `.npz` holds a `(n_events, 15)` `data` array with columns
-`dt, dt_prev, band_id, logflux, logflux_err, band_g/r/i, g_r(±err/flag),
-r_i(±err/flag), label`. FLARE reconstructs per-band light curves and extracts
-its features automatically.
+All external columns are optional at inference: the models are trained with the
+external blocks randomly blanked, so a hostless or uncovered object degrades
+gracefully. Never impute those columns — pass NaN.
 
 ## Train / reproduce
 

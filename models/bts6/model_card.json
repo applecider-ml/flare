@@ -1,0 +1,82 @@
+{
+  "scheme": "bts6",
+  "classes": [
+    "SN_Ia",
+    "SN_CC",
+    "SLSN",
+    "AGN",
+    "TDE",
+    "CV"
+  ],
+  "top_classes": [
+    "SN_Ia",
+    "SN_CC+",
+    "AGN",
+    "TDE",
+    "CV"
+  ],
+  "branch_threshold": 0.2,
+  "training": {
+    "objects": 7347,
+    "features": 190,
+    "external_dropout": 0.3,
+    "beta": 0.8,
+    "data": "ZTF BTS benchmark (see benchmark/DATASET.md)"
+  },
+  "performance_note": "quote the paper's five-fold out-of-fold numbers, not a single split: accuracy 0.924+-0.001, macro F1 0.832+-0.016; per-class F1 SN_Ia 0.957, SN_CC 0.852, SLSN 0.525, AGN 0.901, TDE 0.813, CV 0.944",
+  "external_blocks": {
+    "host": [
+      "host_sep",
+      "host_r",
+      "host_i",
+      "host_gr",
+      "host_ri",
+      "host_iz",
+      "host_ext",
+      "n_ext_30",
+      "near_sep",
+      "near_ext"
+    ],
+    "photoz": [
+      "M_pseudo"
+    ],
+    "point_source": [
+      "gaia_sep",
+      "parallax",
+      "parallax_over_error",
+      "pm",
+      "pm_over_error",
+      "gaia_g",
+      "ruwe",
+      "wise_sep",
+      "w1",
+      "w1w2",
+      "w2w3"
+    ],
+    "counterpart": [
+      "pos_sep",
+      "pos_g",
+      "pos_r",
+      "pos_i",
+      "pos_gr",
+      "pos_ri",
+      "pos_star",
+      "pos_ndet"
+    ]
+  },
+  "anomaly_space": {
+    "model": "ad_space.txt",
+    "columns_excluded": [
+      "M_pseudo",
+      "pos_sep",
+      "pos_g",
+      "pos_r",
+      "pos_i",
+      "pos_gr",
+      "pos_ri",
+      "pos_star",
+      "pos_ndet"
+    ],
+    "note": "blind energy scores come from this booster; M_pseudo and the counterpart block harm detection (measured)"
+  }
+}

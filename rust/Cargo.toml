@@ -1,0 +1,33 @@
+[package]
+name = "flare"
+version = "2.0.0"
+edition = "2021"
+description = "FLARE photometric classifier for alert brokers: light-curve features, LightGBM inference, conformal sets, anomaly energy"
+license = "MIT"
+repository = "https://github.com/applecider-ml/flare"
+readme = "README.md"
+
+[lib]
+name = "flare"
+path = "src/lib.rs"
+
+[[bin]]
+name = "flare"
+path = "src/bin/flare.rs"
+
+[dependencies]
+light-curve-feature = "0.20"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[features]
+default = []
+# Bazin fit with the Ceres solver, as the Python package uses (compiles Ceres/Eigen/glog from source)
+ceres = ["light-curve-feature/ceres-source"]
+
+[dev-dependencies]
+approx = "0.5"
+
+[profile.release]
+opt-level = 3
