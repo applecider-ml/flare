@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>FLARE — Feature-based Light-curve Aggregated Ranking Ensemble</title>
+<meta name="description" content="FLARE: a physics-features + gradient-boosted-trees classifier for ZTF photometric transients, with class-conditional conformal uncertainty and an anomaly layer.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#14101a; --panel:#1c1622; --raised:#241d2c; --line:#332a3d;
+  --ink:#f3edf4; --dim:#a99cb3; --faint:#7d7189;
+  --rose:#e0679a; --plum:#a06cd5;
+  --ok:#4ea72e; --warn:#e0a03c; --bad:#e0483c;
+}
+:root[data-theme="light"]{
+  --ground:#faf7fb; --panel:#ffffff; --raised:#f4eef6; --line:#e6dced;
+  --ink:#231c2a; --dim:#6b5f75; --faint:#8d8296;
+  --rose:#c2477a; --plum:#6d3fa0;
+  --ok:#3d7d2a; --warn:#a8721f; --bad:#b3373a;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --ground:#faf7fb; --panel:#ffffff; --raised:#f4eef6; --line:#e6dced;
+    --ink:#231c2a; --dim:#6b5f75; --faint:#8d8296;
+    --rose:#c2477a; --plum:#6d3fa0;
+    --ok:#3d7d2a; --warn:#a8721f; --bad:#b3373a;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.dim{color:var(--dim)}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0;text-wrap:balance;font-weight:500}
+a{color:var(--rose);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.92em;
+  background:var(--raised);padding:.1em .35em;border-radius:4px}
+pre{margin:0;background:var(--raised);border:1px solid var(--line);border-radius:8px;
+  padding:.9rem 1.1rem;overflow-x:auto;font-size:.88rem;line-height:1.55}
+pre code{background:none;padding:0;font-size:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.5rem}
+
+/* ---- masthead ---- */
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:1.4rem;padding-top:.75rem;padding-bottom:.75rem;flex-wrap:wrap}
+.brand{font-family:Fraunces,Georgia,serif;font-size:1.35rem;font-weight:600;letter-spacing:.08em;color:var(--ink)}
+.brand span{color:var(--rose)}
+nav{display:flex;gap:1.1rem;flex-wrap:wrap;margin-left:auto;font-size:.9rem}
+nav a{color:var(--dim)}
+nav a:hover{color:var(--ink);text-decoration:none}
+.tbtn{border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:999px;
+  padding:.25rem .7rem;font-size:.8rem;cursor:pointer;font-family:inherit}
+.tbtn:hover{color:var(--ink)}
+
+/* ---- hero ---- */
+.hero{padding:4.5rem 0 3rem}
+.eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--plum);font-weight:600}
+.hero h1{font-size:clamp(2.2rem,5vw,3.4rem);line-height:1.1;margin:.6rem 0 1.1rem;max-width:20ch}
+.hero p.lede{font-size:1.12rem;max-width:62ch;color:var(--dim);margin:0 0 1.8rem}
+.btns{display:flex;gap:.8rem;flex-wrap:wrap}
+.btn{display:inline-block;padding:.6rem 1.15rem;border-radius:8px;font-weight:500;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn:hover{text-decoration:none;border-color:var(--plum)}
+.btn.primary{background:var(--rose);border-color:var(--rose);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+
+/* ---- stats ---- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:2.5rem 0 0}
+.stat{background:var(--panel);padding:1.1rem 1.25rem}
+.stat b{display:block;font-family:Fraunces,Georgia,serif;font-size:1.9rem;font-weight:500;line-height:1.1;color:var(--ink)}
+.stat span{font-size:.82rem;color:var(--dim)}
+
+/* ---- sections ---- */
+section{padding:3.2rem 0;border-top:1px solid var(--line)}
+section h2{font-size:1.75rem;margin-bottom:.4rem}
+section > .wrap > p.sub{color:var(--dim);max-width:66ch;margin:0 0 1.6rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem;
+  display:flex;flex-direction:column;gap:.55rem}
+.card h3{font-size:1.15rem}
+.card p{margin:0;color:var(--dim);font-size:.93rem;flex:1}
+.card .tag{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--plum);font-weight:600}
+.card a.go{font-weight:500}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.4rem}
+.two h3{font-size:1.05rem;margin-bottom:.5rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem;background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tablewrap{overflow-x:auto;border-radius:10px}
+th,td{padding:.6rem .85rem;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);background:var(--raised)}
+tr:last-child td{border-bottom:none}
+td.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+td.best{color:var(--ink);font-weight:600}
+.pill{display:inline-block;padding:.05rem .5rem;border-radius:999px;font-size:.78rem;
+  border:1px solid var(--line);background:var(--raised);font-family:"IBM Plex Mono",ui-monospace,monospace}
+ul.plain{list-style:none;padding:0;margin:0;display:grid;gap:.7rem}
+ul.plain li{padding-left:1.1rem;position:relative;color:var(--dim)}
+ul.plain li::before{content:"";position:absolute;left:0;top:.65em;width:.45rem;height:.45rem;border-radius:50%;background:var(--plum)}
+ul.plain li b{color:var(--ink);font-weight:500}
+.layout{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.86rem;line-height:1.7;color:var(--dim)}
+.layout b{color:var(--ink);font-weight:500}
+footer{padding:2.5rem 0 3.5rem;border-top:1px solid var(--line);color:var(--faint);font-size:.88rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between}
+@media (max-width:640px){ .hero{padding:3rem 0 2rem} nav{gap:.8rem} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#">FL<span>A</span>RE</a>
+    <nav>
+      <a href="#demos">Demos</a>
+      <a href="#performance">Performance</a>
+      <a href="#install">Install</a>
+      <a href="#learn">Learn</a>
+      <a href="https://github.com/applecider-ml/flare">GitHub ↗</a>
+      <button class="tbtn" id="theme" type="button" aria-label="Toggle colour theme">theme</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Photometric classification for ZTF alerts</div>
+      <h1>Feature-based Light-curve Aggregated Ranking Ensemble</h1>
+      <p class="lede">
+        A physics-features + gradient-boosted-trees classifier for ZTF photometric transients,
+        with class-conditional conformal uncertainty and an anomaly layer for what falls outside
+        the taxonomy. Calibrated probabilities, guaranteed per-class coverage, interpretable
+        decisions, CPU-minutes to train, plain model files to deploy.
+      </p>
+      <div class="btns">
+        <a class="btn primary" href="flare_console.html">Open the alert console</a>
+        <a class="btn" href="https://github.com/applecider-ml/flare">Source on GitHub</a>
+        <a class="btn" href="#install">pip install</a>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b>160</b><span>physics features per multi-band light curve</span></div>
+        <div class="stat"><b>0.924</b><span>accuracy, bts6, five-fold out of fold on 10,497 BTS objects</span></div>
+        <div class="stat"><b>90%</b><span>guaranteed per-class conformal coverage (α = 0.10)</span></div>
+        <div class="stat"><b>0 GPU</b><span>LightGBM on CPU; no deep-learning frameworks</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="sub">Engineered physics features plus tree-based ranking, with honest calibration on top.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="tag">1 · Features</div>
+          <h3>160 physically-motivated features</h3>
+          <p>Variability statistics, Bazin transient fits, colour evolution and cadence from each
+             multi-band light curve, optionally joined with context available at alert time:
+             Pan-STARRS host photometry, a Legacy-Surveys photo-z pseudo-absolute magnitude,
+             Gaia DR3 and AllWISE point-source context.</p>
+        </div>
+        <div class="card">
+          <div class="tag">2 · Classifier</div>
+          <h3>LightGBM, two schemes</h3>
+          <p><b>bts6</b>: SN Ia · SN CC · SLSN · AGN · TDE · CV as a 5-way top level plus an SLSN head.
+             <b>broad5</b>: the legacy AppleCiDEr taxonomy used by the tutorial notebooks.
+             External blocks are randomly blanked in training, so a hostless or uncovered object
+             degrades gracefully instead of being misread.</p>
+        </div>
+        <div class="card">
+          <div class="tag">3 · Uncertainty</div>
+          <h3>Mondrian conformal sets + anomaly energy</h3>
+          <p>Per object, the set of classes guaranteed to contain the truth with probability ≥ 1−α,
+             per class. Easy objects get one label; genuinely ambiguous ones get a short list for
+             spectroscopic follow-up. An anomaly layer scores what is out of taxonomy, with the
+             base rate that probability assumes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demos">
+    <div class="wrap">
+      <h2>How it reports</h2>
+      <p class="sub">Renderings of genuine per-alert output on real ZTF objects. No invented values anywhere.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="tag">Production proposal</div>
+          <h3>FLARE alert console</h3>
+          <p>A triage queue plus the full per-object case: probabilities, the conformal set and the
+             error it admits, anomaly probability with its base rate, and the context that drove the
+             decision. This is how we would want a deployment to report.</p>
+          <a class="go" href="flare_console.html">Open the console →</a>
+        </div>
+        <div class="card">
+          <div class="tag">Broker integration</div>
+          <h3>FLARE inside BOOM</h3>
+          <p>The same content rendered inside BOOM's own design system, as a concrete integration
+             proposal for the broker team. Every token, tile rule and band colour is read from the
+             boom-astro/boom frontend source.</p>
+          <a class="go" href="boom_panel.html">Open the BOOM panel →</a>
+        </div>
+        <div class="card">
+          <div class="tag">CLI output</div>
+          <h3>Example report</h3>
+          <p>What <code>flare report</code> writes: a self-contained HTML page for a handful of
+             object ids, built from BOOM or public ALeRCE photometry plus per-position context.</p>
+          <a class="go" href="example_report.html">Open the example report →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="performance">
+    <div class="wrap">
+      <h2>Performance</h2>
+      <p class="sub">bts6 scheme, five-fold out of fold, 10,497 Bright Transient Survey objects. Each column adds a context block.</p>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Metric</th><th>light curve only</th><th>+ host</th><th>+ Gaia/WISE</th><th>+ PS1 counterpart</th></tr></thead>
+        <tbody>
+          <tr><td>accuracy</td><td class="num">0.899 ± 0.005</td><td class="num">0.918 ± 0.005</td><td class="num">0.922 ± 0.005</td><td class="num best">0.924 ± 0.001</td></tr>
+          <tr><td>balanced accuracy</td><td class="num">0.713 ± 0.034</td><td class="num">0.799 ± 0.021</td><td class="num">0.811 ± 0.026</td><td class="num best">0.826 ± 0.033</td></tr>
+          <tr><td>macro F1</td><td class="num">0.723 ± 0.034</td><td class="num">0.804 ± 0.012</td><td class="num">0.820 ± 0.017</td><td class="num best">0.832 ± 0.016</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="two" style="margin-top:1.6rem">
+        <div>
+          <h3>Per-class F1, adopted configuration</h3>
+          <p class="dim" style="margin:0">
+            <span class="pill">SN Ia 0.96</span> <span class="pill">SN CC 0.85</span> <span class="pill">SLSN 0.53</span>
+            <span class="pill">AGN 0.90</span> <span class="pill">TDE 0.81</span> <span class="pill">CV 0.94</span>
+          </p>
+        </div>
+        <div>
+          <h3>Coverage and detection</h3>
+          <ul class="plain">
+            <li><b>Conformal sets hold the 90% target</b>: marginal 0.910; the 68-object TDE class sits at 0.853, within binomial noise. SLSN averages ≈ 2.1 labels per set rather than a silent misclassification.</li>
+            <li><b>Rare-class detection</b> reaches 94% (TDE) and 86% (novae) at a 1% false-alarm budget.</li>
+            <li><b>The anomaly layer reads a narrower context</b> (features + host + Gaia/WISE): M_pseudo and the counterpart block help classification but harm blind detection.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2>Install and use</h2>
+      <p class="sub">Requires <code>light-curve</code>, <code>lightgbm</code>, and the numpy / pandas / scipy / scikit-learn stack.</p>
+      <div class="two">
+        <div>
+          <h3>Install</h3>
+<pre><code>git clone https://github.com/applecider-ml/flare.git
+cd flare
+pip install -e .        # or: pip install -r requirements.txt</code></pre>
+          <h3 style="margin-top:1.3rem">Command line</h3>
+<pre><code>flare report ZTF19acbzgog ZTF22abkfhua -o report.html   # console page
+flare predict ZTF19acbzgog                              # same as JSON</code></pre>
+          <p class="dim" style="font-size:.9rem;margin:.7rem 0 0">Photometry comes from BOOM when
+            <code>BOOM_URL</code> and credentials are set, and from ALeRCE otherwise. Anything
+            unavailable stays missing; never impute the external columns, pass NaN.</p>
+        </div>
+        <div>
+          <h3>Python</h3>
+<pre><code>import flare
+clf = flare.load_classifier()          # bts6 by default
+
+labels = clf.predict_from_files(["ZTF21abcdxyz.npz"])
+sets   = clf.prediction_sets_from_files(["ZTF21abcdxyz.npz"])
+energy = clf.anomaly_energy(clf.features_from_files([...]))
+
+# everything from an object id:
+from flare.fetch import fetch_events
+from flare.context import context_features</code></pre>
+          <h3 style="margin-top:1.3rem">Rust crate for brokers</h3>
+          <p class="dim" style="font-size:.9rem;margin:0">The same model as a Rust crate in
+            <a href="https://github.com/applecider-ml/flare/tree/main/rust"><code>rust/</code></a>:
+            an exact LightGBM text-model evaluator, the 160 features, conformal sets and anomaly
+            energy. No Python, no ONNX runtime. An ONNX export is also provided under
+            <code>models/bts6/onnx</code>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="learn">
+    <div class="wrap">
+      <h2>Learn</h2>
+      <p class="sub">Executable, student-level lessons with exercises and baked outputs.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="tag">Notebook</div>
+          <h3>FLARE tutorial</h3>
+          <p>From raw light curves to features, trees, calibration, conformal prediction and interpretability.</p>
+          <a class="go" href="https://github.com/applecider-ml/flare/blob/main/notebooks/flare_tutorial.ipynb">flare_tutorial.ipynb →</a>
+        </div>
+        <div class="card">
+          <div class="tag">Notebook</div>
+          <h3>Similarity search</h3>
+          <p>The FLARE features as an interpretable embedding: k-NN retrieval, a 2-D map of the transient sky,
+             k-NN classification, anomaly detection via neighbour distance, approximate NN.</p>
+          <a class="go" href="https://github.com/applecider-ml/flare/blob/main/notebooks/similarity_search.ipynb">similarity_search.ipynb →</a>
+        </div>
+        <div class="card">
+          <div class="tag">Notebook</div>
+          <h3>Why FLARE works</h3>
+          <p>SHAP attribution on the trees recovers textbook transient physics: TDEs by a blue, near-constant
+             g−r colour and a smooth decline; AGN by stochastic variability; SNe by rise/fade shape and reddening.</p>
+          <a class="go" href="https://github.com/applecider-ml/flare/blob/main/notebooks/why_flare_works.ipynb">why_flare_works.ipynb →</a>
+        </div>
+        <div class="card">
+          <div class="tag">Course</div>
+          <h3>ZTF summer school</h3>
+          <p>A full session: the FLARE pipeline, building your own classifier, looking inside a deep network,
+             beyond the catalogue with rare transients, and a hackathon brief.</p>
+          <a class="go" href="https://github.com/applecider-ml/flare/tree/main/notebooks/ztf_summer_school">notebooks/ztf_summer_school →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="layout">
+    <div class="wrap">
+      <h2>Repository layout</h2>
+      <div class="two" style="margin-top:1rem">
+        <div class="layout">
+<b>flare/</b>        the package: features, models, conformal, fetch, context<br>
+<b>models/</b>       pretrained weights for both schemes (+ ONNX)<br>
+<b>rust/</b>         the Rust crate for alert brokers<br>
+<b>benchmark/</b>    the BTS benchmark: splits, features, external context<br>
+<b>scripts/</b>      train, evaluate, predict, ONNX export<br>
+<b>notebooks/</b>    tutorials and the ZTF summer-school session<br>
+<b>docs/</b>         this page and the report renderings
+        </div>
+        <div>
+          <h3>Citation</h3>
+          <p class="dim" style="margin:0 0 .8rem">If you use FLARE, please cite the accompanying paper (in prep.).
+            FLARE is the light-curve module of AppleCiDEr.</p>
+          <h3>License</h3>
+          <p class="dim" style="margin:0">MIT. See <a href="https://github.com/applecider-ml/flare/blob/main/LICENSE">LICENSE</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>FLARE · Feature-based Light-curve Aggregated Ranking Ensemble</span>
+    <span><a href="https://github.com/applecider-ml/flare">github.com/applecider-ml/flare</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('theme');
+  try{ var s=localStorage.getItem('flare-theme'); if(s) root.setAttribute('data-theme',s); }catch(e){}
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    var dark = cur ? cur==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme',next);
+    try{ localStorage.setItem('flare-theme',next); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,9 @@
-# docs — how the module reports
+# docs — the project page and how the module reports
+
+This folder is served as the project's GitHub Pages site at
+https://applecider-ml.github.io/flare/ (Settings → Pages → branch `main`,
+folder `/docs`). `index.html` is the landing page; `.nojekyll` keeps GitHub
+from running Jekyll over the static files.
 
 Two renderings of the same per-alert output, both built from genuine model
 outputs on real ZTF objects (no invented values anywhere).

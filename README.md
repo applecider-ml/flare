@@ -1,5 +1,8 @@
 # FLARE
 
+**Project page:** https://applecider-ml.github.io/flare/ — live demos of the
+alert console and the BOOM panel, performance, install and tutorials.
+
 **Feature-based Light-curve Aggregated Ranking Ensemble** — a physics-features +
 gradient-boosted-trees classifier for ZTF photometric transients, with
 class-conditional conformal uncertainty and an anomaly layer for what falls
