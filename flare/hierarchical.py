@@ -74,6 +74,7 @@ class HierarchicalFlare:
             cal_scores = d.get("cal_scores")
             coverage = d.get("empirical_coverage")
         inst = cls(top, branch, thr, qhat, alpha, cal_scores, coverage)
+        inst.horizon_days = cfg.horizon_days
         ad_path = cfg.model_paths.get("ad_space")
         if ad_path and Path(ad_path).exists():
             inst.ad_space = lgb.Booster(model_file=str(ad_path))
@@ -201,10 +202,13 @@ class HierarchicalFlare:
                                "scripts/train_bts6.py")
         cal = self.anomaly_cal
         pi = float(cal["base_rate"] if base_rate is None else base_rate)
+        if not np.isfinite(pi) or not 0 < pi < 1:
+            raise ValueError("base_rate must be finite and strictly between 0 and 1")
         E = self.anomaly_energy(X)
-        lr = np.exp(cal["coef"] * E + cal["intercept"])
-        odds = lr * pi / (1.0 - pi)
-        p = odds / (1.0 + odds)
+        from scipy.special import expit
+        log_lr = cal["coef"] * E + cal["intercept"]
+        lr = np.exp(np.clip(log_lr, -745, 709))
+        p = expit(log_lr + np.log(pi) - np.log1p(-pi))
         known = np.asarray(cal.get("known_energies", []), dtype=float)
         out = []
         for i in range(len(E)):
