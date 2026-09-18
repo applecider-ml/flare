@@ -7,7 +7,7 @@ Per band (g, r, i):
     amplitude, baseline, reduced chi2)
   - cadence features (n_obs, span, gaps)
 Cross-band:
-  - g−r and r−i color statistics from the precomputed per-event colors
+  - g−r and r−i color statistics rebuilt from the available event rows
   - color evolution slope (TDE ~ constant blue color; SNe redden)
   - peak-time difference and peak-flux ratio between g and r
 
