@@ -19,6 +19,9 @@ DATA_DIR = Path(os.environ.get(
     "FLARE_DATA",
     "/work/hdd/bcrv/ffontinelenunes/data/AppleCider/photo_events"))
 HORIZON_DAYS = 100.0
+# Pairing window for per-event g−r / r−i colours. The BTS event files were built
+# with 1.5 d; FLARE_COLOR_WINDOW overrides it for sensitivity studies.
+COLOR_WINDOW_DAYS = float(os.environ.get("FLARE_COLOR_WINDOW", "1.5"))
 
 # Quality-filter defaults
 MIN_OBS_TOTAL = 8
@@ -123,8 +126,37 @@ def reconstruct_bands(arr: np.ndarray) -> Dict[str, BandLC]:
     return out
 
 
+def recompute_colors(events):
+    """Rebuild color channels from this observed prefix, never cached full curves.
+
+    A cached color attached to an early detection can have used a counterpart
+    after the cutoff. Clearing and recomputing these six columns is essential
+    even after the event rows themselves have been truncated.
+    """
+    a = np.asarray(events, dtype=float).copy()
+    for name, first, second in [('g_r', 0, 1), ('r_i', 1, 2)]:
+        a[:, [COL[name], COL[name + '_err'], COL['has_' + name]]] = 0.
+        for i in range(len(a)):
+            band = a[i, COL['band_id']]
+            if band not in (first, second):
+                continue
+            other = np.flatnonzero(a[:, COL['band_id']] == (second if band == first else first))
+            if not len(other):
+                continue
+            j = other[np.argmin(np.abs(a[other, 0] - a[i, 0]))]
+            if abs(a[j, 0] - a[i, 0]) > COLOR_WINDOW_DAYS:
+                continue
+            lf_first = a[i if band == first else j, COL['logflux']]
+            lf_second = a[j if band == first else i, COL['logflux']]
+            a[i, COL[name]] = -2.5 * (lf_first - lf_second)
+            a[i, COL[name + '_err']] = 2.5 * np.hypot(a[i, COL['logflux_err']], a[j, COL['logflux_err']])
+            a[i, COL['has_' + name]] = 1.
+    return a
+
+
 def color_series(arr: np.ndarray) -> Dict[str, np.ndarray]:
-    """Precomputed g−r / r−i color series where the has_* flag is set."""
+    """g−r / r−i series rebuilt from available rows, ignoring cached colors."""
+    arr = recompute_colors(arr)
     out = {}
     for c, flag in [("g_r", "has_g_r"), ("r_i", "has_r_i")]:
         m = arr[:, COL[flag]] > 0.5
