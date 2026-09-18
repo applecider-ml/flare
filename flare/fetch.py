@@ -26,7 +26,7 @@ import numpy as np
 
 ZP = 23.9
 LOG_CONST = 1.0 / np.log(10)
-COLOR_WINDOW = 1.5
+COLOR_WINDOW = float(os.environ.get("FLARE_COLOR_WINDOW", "1.5"))  # keep in step with data.COLOR_WINDOW_DAYS
 DEFAULT_HORIZON = 100.0
 
 Row = Tuple[float, int, float, float]
