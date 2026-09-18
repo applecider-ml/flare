@@ -1,7 +1,4 @@
-# FLARE inference image for batch/pipeline photometric classification (e.g. OSG).
-# The model bank is baked in so jobs run fully offline (execute nodes have no
-# egress). The Rust crate and the training/figure extras are left out — this is
-# the LightGBM inference path the SkyPortal analysis service calls.
+# FLARE LightGBM inference image; the model bank is baked in so jobs run offline.
 
 FROM python:3.11-slim-bookworm
 
@@ -16,12 +13,9 @@ ENV PIP_NO_CACHE_DIR=1 \
 WORKDIR /src
 COPY . .
 
-# matplotlib for the light-curve plot, requests for the analysis-callback upload;
-# neither is a core flare dependency but the SkyPortal job needs both. Then bake
-# the models at PKG_ROOT/models (the parent of the installed flare package), where
-# config.py resolves them, and drop the build context.
+# requests for the analysis-callback upload; then bake the models at PKG_ROOT/models where config.py resolves them.
 RUN pip install --upgrade pip \
-    && pip install . matplotlib requests \
+    && pip install . requests \
     && PKG="$(cd / && python -c 'import flare, pathlib; print(pathlib.Path(flare.__file__).resolve().parents[1])')" \
     && mkdir -p "$PKG/models" \
     && cp -r models/. "$PKG/models/" \

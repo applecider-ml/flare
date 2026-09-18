@@ -22,9 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Publish only from the canonical repo's mainline (main branch or a version
-      # tag). Forks, feature branches, and pull requests build without pushing —
-      # the image is owned by applecider-ml/flare, not by whoever forked it.
+      # Publish only from applecider-ml/flare on main or a version tag; forks and PRs build without pushing.
       - name: Decide whether to publish
         id: publish
         run: |
