@@ -1,0 +1,10 @@
+.git
+rust
+notebooks
+docs
+benchmark
+artifacts
+tests
+**/__pycache__
+*.pyc
+.DS_Store
