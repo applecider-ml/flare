@@ -19,6 +19,15 @@ from pathlib import Path
 
 DEFAULTS = {"horizon_days": 100.0, "context": "live", "base_rate": 0.0326, "agent": False, "plot": True}
 
+# FLARE's six classes -> the nearest label in SkyPortal's Sitewide Taxonomy (core
+# collapse has no umbrella node there, Type II is the modal subtype; SLSN exists
+# only as subtypes). Rows carry ml=True and a FLARE origin so they render as
+# their own set, apart from other classifiers and from human labels.
+SKYPORTAL_TAXONOMY = "Sitewide Taxonomy"
+SKYPORTAL_ORIGIN = "FLARE"
+FLARE_TO_TAXONOMY = {"SN_Ia": "Ia", "SN_CC": "Type II", "SLSN": "Ic-SLSN", "AGN": "AGN",
+                     "TDE": "Tidal Disruption Event", "CV": "Cataclysmic"}
+
 
 def _to_float(value):
     if value in (None, "", "None", "nan", "NaN"):
@@ -169,8 +178,9 @@ def plot_lightcurve(events, cls: dict, resource_id: str, outdir: Path) -> list[s
 
 
 def annotations_for(cls: dict, verdict: dict) -> dict:
+    """Flat annotation dict (human-readable summary numbers + the probability vector)."""
     a = cls["anomaly"]
-    out = {
+    out = {**{f"flare_p_{k}": v for k, v in cls["probabilities"].items()},
         "flare_class": cls["predicted"],
         "flare_p_max": max(cls["probabilities"].values()),
         "flare_set": "|".join(cls["prediction_set"]),
@@ -181,6 +191,20 @@ def annotations_for(cls: dict, verdict: dict) -> dict:
         "flare_priority": verdict.get("priority"),
     }
     return {k: v for k, v in out.items() if v is not None and not (isinstance(v, float) and math.isnan(v))}
+
+
+def skyportal_annotations(cls: dict, verdict: dict) -> list:
+    """The webhook form: a list of {origin, data}; a flat dict is silently dropped by SkyPortal."""
+    return [{"origin": SKYPORTAL_ORIGIN, "data": annotations_for(cls, verdict)}]
+
+
+def skyportal_classifications(cls: dict) -> list:
+    """One ml classification of the predicted class on the Sitewide Taxonomy."""
+    label = FLARE_TO_TAXONOMY.get(cls["predicted"])
+    if not label:
+        return []
+    return [{"taxonomy": SKYPORTAL_TAXONOMY, "classification": label,
+             "probability": cls["probabilities"][cls["predicted"]], "ml": True, "origin": SKYPORTAL_ORIGIN}]
 
 
 
@@ -225,5 +249,6 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
                     "redshift_source": "skyportal" if z is not None else ("host photo-z" if ctx.get("z_phot") else None),
                     "classification": cls, "context": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in ctx.items()},
                     "context_error": context.get("_error"), "triage": verdict},
-        "annotations": annotations_for(cls, verdict), "plot_files": plots,
+        "annotations": skyportal_annotations(cls, verdict), "classifications": skyportal_classifications(cls),
+        "annotations_flat": annotations_for(cls, verdict), "plot_files": plots,
     }

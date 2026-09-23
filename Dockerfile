@@ -13,16 +13,16 @@ ENV PIP_NO_CACHE_DIR=1 \
 WORKDIR /src
 COPY . .
 
-# requests for the analysis-callback upload; then bake the models at PKG_ROOT/models where config.py resolves them.
+# [skyportal] = requests for the analysis-callback upload + matplotlib for the PNG; then bake the models at PKG_ROOT/models where config.py resolves them.
 RUN pip install --upgrade pip \
-    && pip install . requests \
+    && pip install ".[skyportal]" \
     && PKG="$(cd / && python -c 'import flare, pathlib; print(pathlib.Path(flare.__file__).resolve().parents[1])')" \
     && mkdir -p "$PKG/models" \
     && cp -r models/. "$PKG/models/" \
     && rm -rf /src
 
 # Fail the build if the runtime isn't importable or the baked models don't load.
-RUN python -c "from flare.hierarchical import HierarchicalFlare; from flare.config import BTS6; HierarchicalFlare.from_pretrained(BTS6); print('flare ok')"
+RUN python -c "import flare.skyportal; from flare.hierarchical import HierarchicalFlare; from flare.config import BTS6; HierarchicalFlare.from_pretrained(BTS6); print('flare ok')"
 
 WORKDIR /work
 CMD ["flare", "--help"]

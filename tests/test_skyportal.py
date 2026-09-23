@@ -25,5 +25,13 @@ def test_annotations_are_flat_and_finite():
     assert all(not isinstance(v, (dict, list)) for v in ann.values())
 
 
+def test_skyportal_shapes():
+    ann = S.skyportal_annotations(_cls(), {"verdict": "ordinary", "priority": 0})
+    assert isinstance(ann, list) and ann[0]["origin"] == "FLARE" and ann[0]["data"]["flare_p_SN_Ia"] == 0.9
+    cl = S.skyportal_classifications(_cls())
+    assert cl == [{"taxonomy": "Sitewide Taxonomy", "classification": "Ia", "probability": 0.9, "ml": True, "origin": "FLARE"}]
+    assert all(S.FLARE_TO_TAXONOMY[c] for c in ("SN_Ia", "SN_CC", "SLSN", "AGN", "TDE", "CV"))
+
+
 def test_resolve_coords_from_params():
     assert S.resolve_coords({"ra": "10.5", "dec": "-3.25"}, "obj") == (10.5, -3.25)

@@ -26,11 +26,17 @@ flare = "flare:_cli"
 
 [project.optional-dependencies]
 train = ["optuna>=3.5"]
+research = ["torch>=2.2"]
 figures = ["matplotlib>=3.7", "shap>=0.44"]
+# the analysis-service path: callback upload + the optional PNG
+skyportal = ["requests>=2.31", "matplotlib>=3.7"]
+# the OSG runtime image on top of that (jax is not used by FLARE itself; the OSG
+# wrapper environment expects it for its CPU-affinity setup)
+osg = ["flare-transients[skyportal]", "jax"]
 
 [tool.setuptools]
 packages = ["flare"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*"]
+flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*.txt", "../models/bts6/*.json", "../models/bts6/forecast/*.txt", "../models/bts6/forecast/*.json", "../models/bts6/forecast_blend/*.txt", "../models/bts6/forecast_blend/*.json", "../models/bts6/pe_ia/*.txt", "../models/bts6/pe_ia/*.json", "../models/bts6/early/h*/*.txt", "../models/bts6/early/h*/*.json", "../models/bts6/onnx/*"]
