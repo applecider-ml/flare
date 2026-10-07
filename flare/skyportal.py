@@ -226,7 +226,10 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
         if c:
             try:
                 from .context import context_features
-                context = context_features(c[0], c[1], peak_mag=None)
+                # Pre-staged cross-matches (e.g. from BOOM) -> run the context block
+                # fully offline, no MAST/Data Lab calls; absent -> live (unchanged).
+                provided = params.get("context_data")
+                context = context_features(c[0], c[1], peak_mag=None, provided=provided)
             except Exception as e:  # noqa: BLE001 — context is optional by design; the model tolerates NaN
                 context = {"_error": f"{type(e).__name__}: {e}"}
     X, peak, ctx = feature_frame(events, context, z)

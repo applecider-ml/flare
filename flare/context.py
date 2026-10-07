@@ -79,6 +79,35 @@ def _sep_arcsec(ra0, dec0, ra, dec):
     return 3600.0 * np.hypot((ra - ra0) * np.cos(np.radians(dec0)), dec - dec0)
 
 
+def _num(row, key):
+    """A finite float from a dict/Series row (native catalogue column), else NaN.
+    Lets the point-source blocks share one code path for a fetched row and a
+    caller-provided (pre-staged) row."""
+    try:
+        v = row[key]
+    except (KeyError, IndexError, TypeError):
+        try:
+            v = getattr(row, key)
+        except AttributeError:
+            return np.nan
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return np.nan
+    return v if np.isfinite(v) else np.nan
+
+
+def _provided_sep(row, ra, dec):
+    """Separation for a provided row: its own ``sep`` if present, else from ra/dec."""
+    sep = _num(row, "sep")
+    if np.isfinite(sep):
+        return sep
+    rra, rdec = _num(row, "ra"), _num(row, "dec")
+    if np.isfinite(rra) and np.isfinite(rdec):
+        return float(_sep_arcsec(ra, dec, rra, rdec))
+    return np.nan
+
+
 def host_features(ra: float, dec: float) -> dict:
     """PS1 host block for one position; NaN-filled dict on any failure."""
     out = {k: np.nan for k in ["host_sep", "host_r", "host_i", "host_gr",
@@ -196,96 +225,137 @@ def _tap_box(q_template: str, ra: float, dec: float, half: float):
     return d.assign(sep=_sep_arcsec(ra, dec, d.ra.values, d.dec.values))             .sort_values("sep")
 
 
-def gaia_features(ra: float, dec: float) -> dict:
-    """Nearest Gaia DR3 source within 2 arcsec; NaN block if none."""
+def gaia_features(ra: float, dec: float, row=None) -> dict:
+    """Nearest Gaia DR3 source within 2 arcsec; NaN block if none. ``row`` (a
+    pre-staged nearest-source dict with Gaia's native columns) skips the TAP query
+    for an offline run."""
     out = dict(gaia_sep=np.nan, parallax=np.nan, parallax_over_error=np.nan,
                pm=np.nan, pm_over_error=np.nan, gaia_g=np.nan, ruwe=np.nan)
-    d = _tap_box(GAIA_Q, ra, dec, GAIA_BOX)
-    if d is None or not len(d):
-        return out
-    h = d.iloc[0]
-    pm = np.hypot(h.pmra, h.pmdec)
-    pme = np.hypot(h.pmra_error, h.pmdec_error)
+    if row is None:
+        d = _tap_box(GAIA_Q, ra, dec, GAIA_BOX)
+        if d is None or not len(d):
+            return out
+        h = d.iloc[0]
+        sep = float(h.sep)
+    else:
+        h, sep = row, _provided_sep(row, ra, dec)
+    plx, plxe = _num(h, "parallax"), _num(h, "parallax_error")
+    pm = np.hypot(_num(h, "pmra"), _num(h, "pmdec"))
+    pme = np.hypot(_num(h, "pmra_error"), _num(h, "pmdec_error"))
     out.update(
-        gaia_sep=float(h.sep),
-        parallax=float(h.parallax) if np.isfinite(h.parallax) else np.nan,
-        parallax_over_error=float(h.parallax / h.parallax_error)
-        if np.isfinite(h.parallax) and h.parallax_error > 0 else np.nan,
+        gaia_sep=sep,
+        parallax=plx,
+        parallax_over_error=float(plx / plxe) if np.isfinite(plx) and plxe > 0 else np.nan,
         pm=float(pm) if np.isfinite(pm) else np.nan,
-        pm_over_error=float(pm / pme)
-        if np.isfinite(pm) and pme > 0 else np.nan,
-        gaia_g=float(h.phot_g_mean_mag)
-        if np.isfinite(h.phot_g_mean_mag) else np.nan,
-        ruwe=float(h.ruwe) if np.isfinite(h.ruwe) else np.nan)
+        pm_over_error=float(pm / pme) if np.isfinite(pm) and pme > 0 else np.nan,
+        gaia_g=_num(h, "phot_g_mean_mag"),
+        ruwe=_num(h, "ruwe"))
     return out
 
 
-def wise_features(ra: float, dec: float) -> dict:
-    """Nearest AllWISE source within 6 arcsec; NaN block if none."""
+def wise_features(ra: float, dec: float, row=None) -> dict:
+    """Nearest AllWISE source within 6 arcsec; NaN block if none. ``row`` (a
+    pre-staged nearest-source dict with w1mpro/w2mpro/w3mpro) skips the TAP query
+    for an offline run."""
     out = dict(wise_sep=np.nan, w1=np.nan, w1w2=np.nan, w2w3=np.nan)
-    d = _tap_box(WISE_Q, ra, dec, WISE_BOX)
-    if d is None or not len(d):
-        return out
-    h = d.iloc[0]
+    if row is None:
+        d = _tap_box(WISE_Q, ra, dec, WISE_BOX)
+        if d is None or not len(d):
+            return out
+        h = d.iloc[0]
+        sep = float(h.sep)
+    else:
+        h, sep = row, _provided_sep(row, ra, dec)
+    w1, w2, w3 = _num(h, "w1mpro"), _num(h, "w2mpro"), _num(h, "w3mpro")
     out.update(
-        wise_sep=float(h.sep),
-        w1=float(h.w1mpro) if np.isfinite(h.w1mpro) else np.nan,
-        w1w2=float(h.w1mpro - h.w2mpro)
-        if np.isfinite(h.w1mpro) and np.isfinite(h.w2mpro) else np.nan,
-        w2w3=float(h.w2mpro - h.w3mpro)
-        if np.isfinite(h.w2mpro) and np.isfinite(h.w3mpro) else np.nan)
+        wise_sep=sep,
+        w1=w1,
+        w1w2=float(w1 - w2) if np.isfinite(w1) and np.isfinite(w2) else np.nan,
+        w2w3=float(w2 - w3) if np.isfinite(w2) and np.isfinite(w3) else np.nan)
     return out
 
 
-def pos_features(ra: float, dec: float) -> dict:
-    """PS1 pre-outburst counterpart at the position (nearest source in 1.5")."""
+def pos_features(ra: float, dec: float, row=None) -> dict:
+    """PS1 pre-outburst counterpart at the position (nearest source in 1.5"). ``row``
+    (a pre-staged PS1 nearest-source dict with the *Mean mags) skips the MAST query
+    for an offline run."""
     out = dict(pos_sep=np.nan, pos_g=np.nan, pos_r=np.nan, pos_i=np.nan,
                pos_gr=np.nan, pos_ri=np.nan, pos_star=np.nan, pos_ndet=np.nan)
-    q = urllib.parse.urlencode({
-        "ra": f"{ra:.6f}", "dec": f"{dec:.6f}",
-        "radius": f"{1.5 / 3600.0:.7f}", "nDetections.gte": 2,
-        "pagesize": 50})
-    raw = _get(MAST + "?" + q)
-    if raw is None:
-        return out
-    try:
-        j = json.loads(raw.decode())
-    except Exception:
-        return out
-    recs = j.get("data", [])
-    if not recs:
-        return out
-    if isinstance(recs[0], list):
-        d = pd.DataFrame(recs, columns=[c["name"] for c in j["info"]])
+    if row is None:
+        q = urllib.parse.urlencode({
+            "ra": f"{ra:.6f}", "dec": f"{dec:.6f}",
+            "radius": f"{1.5 / 3600.0:.7f}", "nDetections.gte": 2,
+            "pagesize": 50})
+        raw = _get(MAST + "?" + q)
+        if raw is None:
+            return out
+        try:
+            j = json.loads(raw.decode())
+        except Exception:
+            return out
+        recs = j.get("data", [])
+        if not recs:
+            return out
+        if isinstance(recs[0], list):
+            d = pd.DataFrame(recs, columns=[c["name"] for c in j["info"]])
+        else:
+            d = pd.DataFrame(recs)
+        for c in d.columns:
+            if c != "objID":
+                d[c] = pd.to_numeric(d[c], errors="coerce")
+        d = d.replace(-999.0, np.nan)
+        d = d.assign(sep=_sep_arcsec(ra, dec, d.raMean.values, d.decMean.values)).sort_values("sep")
+        h = d.iloc[0]
+        sep = float(h.sep)
     else:
-        d = pd.DataFrame(recs)
-    for c in d.columns:
-        if c != "objID":
-            d[c] = pd.to_numeric(d[c], errors="coerce")
-    d = d.replace(-999.0, np.nan)
-    d = d.assign(sep=_sep_arcsec(ra, dec, d.raMean.values, d.decMean.values))          .sort_values("sep")
-    h = d.iloc[0]
-    g = lambda v: float(v) if np.isfinite(v) else np.nan
-    star = (h.iMeanPSFMag - h.iMeanKronMag
-            if np.isfinite(h.iMeanPSFMag) and np.isfinite(h.iMeanKronMag)
-            else np.nan)
-    out.update(pos_sep=float(h.sep), pos_g=g(h.gMeanPSFMag),
-               pos_r=g(h.rMeanPSFMag), pos_i=g(h.iMeanPSFMag),
-               pos_gr=g(h.gMeanPSFMag - h.rMeanPSFMag),
-               pos_ri=g(h.rMeanPSFMag - h.iMeanPSFMag),
+        h, sep = row, _provided_sep(row, ra, dec)
+    gm, rm, im = _num(h, "gMeanPSFMag"), _num(h, "rMeanPSFMag"), _num(h, "iMeanPSFMag")
+    ik = _num(h, "iMeanKronMag")
+    star = im - ik if np.isfinite(im) and np.isfinite(ik) else np.nan
+    out.update(pos_sep=sep, pos_g=gm, pos_r=rm, pos_i=im,
+               pos_gr=float(gm - rm) if np.isfinite(gm) and np.isfinite(rm) else np.nan,
+               pos_ri=float(rm - im) if np.isfinite(rm) and np.isfinite(im) else np.nan,
                pos_star=float(star < 0.05) if np.isfinite(star) else np.nan,
-               pos_ndet=g(h.nDetections))
+               pos_ndet=_num(h, "nDetections"))
     return out
 
 
 def context_features(ra: float, dec: float,
-                     peak_mag: Optional[float] = None) -> dict:
-    """The full external block for one alert: host + M_pseudo + point source."""
-    out = host_features(ra, dec)
-    pz = photoz(ra, dec)
-    out["M_pseudo"] = m_pseudo(peak_mag, pz["z_phot"]) \
-        if peak_mag is not None else float("nan")
-    out.update(gaia_features(ra, dec))
-    out.update(wise_features(ra, dec))
-    out.update(pos_features(ra, dec))
+                     peak_mag: Optional[float] = None,
+                     provided: Optional[dict] = None) -> dict:
+    """The full external block for one alert: host + M_pseudo + point source.
+
+    Live by default (queries MAST/Data Lab). Pass ``provided`` to run fully
+    OFFLINE from pre-staged cross-matches (e.g. BOOM), making no network calls -- a
+    dict with any of these keys:
+      - ``gaia`` / ``wise`` / ``pos``: the nearest-source row (native catalogue
+        columns: parallax/pmra/phot_g_mean_mag/ruwe; w1mpro/w2mpro/w3mpro;
+        gMeanPSFMag/.../iMeanKronMag/nDetections) -> computed into features here.
+      - ``host`` / ``photoz``: the aggregated blocks precomputed by the caller
+        (the 30" PS1 host and LS photo-z can't be rebuilt from a single row), as a
+        dict of the ``host_*`` / ``z_phot*`` feature values.
+      - ``z_phot``: host photo-z for M_pseudo when ``photoz`` isn't supplied.
+    A missing key yields that block's NaN values -- never a network call."""
+    if provided is None:  # live (unchanged default)
+        out = host_features(ra, dec)
+        pz = photoz(ra, dec)
+        out["M_pseudo"] = m_pseudo(peak_mag, pz["z_phot"]) if peak_mag is not None else float("nan")
+        out.update(gaia_features(ra, dec))
+        out.update(wise_features(ra, dec))
+        out.update(pos_features(ra, dec))
+        return out
+
+    # Offline: compute each block from the staged rows, no network.
+    out = {k: np.nan for k in ["host_sep", "host_r", "host_i", "host_gr", "host_ri",
+                               "host_iz", "host_ext", "n_ext_30", "near_sep", "near_ext"]}
+    out.update(provided.get("host") or {})
+    pz = provided.get("photoz") or {}
+    out.setdefault("z_phot", pz.get("z_phot", provided.get("z_phot", np.nan)))
+    for k in ("z_phot_std", "pz_sep"):
+        if k in pz:
+            out[k] = pz[k]
+    out["M_pseudo"] = m_pseudo(peak_mag, out.get("z_phot")) if peak_mag is not None else float("nan")
+    out.update(gaia_features(ra, dec, row=provided.get("gaia")))
+    out.update(wise_features(ra, dec, row=provided.get("wise")))
+    out.update(pos_features(ra, dec, row=provided.get("pos")))
     return out
