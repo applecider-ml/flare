@@ -1,0 +1,27 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "h10.json": "322b7f0a54b8878ca249ead33826800d12506588f1a9d5f27d910c47cc5aab27",
+    "h10_baseline.txt": "f562e951e7cfbd3b14337d0e0f3d600ad2f78a03edb29c2913a75a427f33a218",
+    "h10_real_delta.txt": "cc3e18ef7fa891cf40c4920015db1a628a3d15561787ac8873a73ebcb6b1fdfa",
+    "h20.json": "eb18636d424cda344dd0be3d152f812a692f843b3dc1b5c5082fa32fa2fe33d3",
+    "h20_baseline.txt": "efa59a0f5f3de1d988251dfe5ba3dfe465b8443b993b7684f85b9bfcaaa6e554",
+    "h20_real_delta.txt": "37a0db349a7270a7cf6e01b9f044a4a7c9ef84c12792016db14a39fbaa07cafa"
+  },
+  "export_script_sha256": "bbf966c73b475bf0b5530d9908c62e85b2ba14f1bbed9dcfdcd29a48aacc08ee",
+  "helper_sha256": "c592a1587d89d7d20613df9e85cc4e084b1f3fc4bfd16c2a5e3e3bf690ce5eba",
+  "evaluation_provenance": {
+    "script_sha256": "f2f272c129e589a212503ab9827090ee716291e26a0fc34aa6e797072225db94",
+    "helper_sha256": "c592a1587d89d7d20613df9e85cc4e084b1f3fc4bfd16c2a5e3e3bf690ce5eba",
+    "parent_provenance_sha256": "03c2dab00853947746843c0c2edfc4ad3661438417ea67db9b7989885ce7d2e3",
+    "recency_sha256": "cfce427f8b072cb22879b84170fef24e55b73d3ecee7a3d5520be13b1ed1a01f",
+    "arguments": {
+      "data": "/projects/bcrv/asasli/later/bts_dataset",
+      "source": "bts_dataset/results/blend_source_20260916",
+      "out": "/projects/bcrv/asasli/later/bts_dataset/results/forecast_blend_causal_20260924",
+      "threads": 4,
+      "workers": 3
+    },
+    "note": "Follow-up motivated by day10 SLSN regression; same inspected population, new partitions, fixed .5 blend."
+  }
+}

@@ -32,16 +32,40 @@ from .taxonomy import BROAD_CLASSES, NUM_CLASSES
 __version__ = "2.0.0"
 
 
-def load_classifier(scheme: Optional[str] = None):
+def load_classifier(scheme: Optional[str] = None, horizon_days: Optional[int] = None):
     """Load the pretrained classifier for a scheme (default: config/env)."""
     cfg = resolve_scheme(scheme)
+    if horizon_days not in (None, 100):
+        if cfg.name != "bts6" or horizon_days not in (5, 10, 20):
+            raise ValueError("early classifiers support bts6 at days 5, 10 or 20")
+        from dataclasses import replace
+        from pathlib import Path
+        import hashlib
+        import json
+        root = Path(cfg.model_paths['top']).parent / 'early' / f'h{int(horizon_days)}'
+        manifest = json.loads((root/'manifest.json').read_text())
+        if not {'top.txt', 'slsn_branch.txt', 'conformal.json', 'model_card.json'} <= manifest.keys():
+            raise ValueError("early classifier manifest is incomplete")
+        for filename, digest in manifest.items():
+            path = (root/filename).resolve()
+            if not path.is_relative_to(root.resolve()) or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise ValueError(f"early classifier manifest mismatch: {filename}")
+        paths = {k:root/name for k,name in [('top','top.txt'),('slsn_branch','slsn_branch.txt'),
+                                           ('conformal','conformal.json'),('card','model_card.json')]}
+        cfg = replace(cfg, model_paths=paths, horizon_days=float(horizon_days))
     if cfg.name == "broad5":
         return FlareClassifier.from_pretrained()
     from .hierarchical import HierarchicalFlare
     return HierarchicalFlare.from_pretrained(cfg)
 
 
-__all__ = ["FlareClassifier", "load_classifier", "resolve_scheme",
+def load_analysis(**kwargs):
+    """Load the offline BTS6 classification/AD/reconstruction/forecast/PE API."""
+    from .analysis import FlareAnalysis
+    return FlareAnalysis(**kwargs)
+
+
+__all__ = ["FlareClassifier", "load_classifier", "load_analysis", "resolve_scheme",
            "SCHEMES", "DEFAULT_SCHEME", "BROAD_CLASSES", "NUM_CLASSES"]
 
 
