@@ -116,6 +116,9 @@ def _classifier(horizon):
             clf.ad_space = lgb.Booster(model_file=str(root / "ad_space.txt")) if (root / "ad_space.txt").exists() else getattr(full, "ad_space", None)
             cal = root / "anomaly_calibration.json"
             clf.anomaly_cal = json.loads(cal.read_text()) if cal.exists() else None
+        from .venn_abers import load_table
+        root = Path(BTS6.model_paths["top"]).parent
+        clf.va_table = load_table((root if horizon is None else root / "early" / f"h{int(horizon)}") / "venn_abers.json")
         _CLASSIFIERS[horizon] = clf
     return _CLASSIFIERS[horizon]
 
@@ -139,6 +142,13 @@ def classify(X, base_rate: float, horizon=None) -> dict:
     label = BTS6.classes[int(P.argmax())]
     order = np.argsort(pv)[::-1]
     n_cal_label = len(clf.cal_scores[label]) if getattr(clf, "cal_scores", None) else None
+    va = None
+    if getattr(clf, "va_table", None):
+        # Venn-Abers interval for every class: [p0, p1] around the class probability, wider where
+        # few calibration objects resemble this one (flare.venn_abers)
+        from .venn_abers import intervals
+        L, U, _ = intervals(P[None, :], clf.va_table, BTS6.classes)
+        va = {c: [round(float(lo), 4), round(float(hi), 4)] for c, lo, hi in zip(BTS6.classes, L[0], U[0])}
     cov = (getattr(clf, "coverage", None) or {}).get(label)
     return {
         "predicted": label,
@@ -152,6 +162,7 @@ def classify(X, base_rate: float, horizon=None) -> dict:
         "model": "bts6" if horizon is None else f"bts6_h{horizon}",
         "model_horizon_days": 100 if horizon is None else horizon,
         "probabilities": {c: round(float(p), 4) for c, p in zip(BTS6.classes, P)},
+        "probability_intervals": va,
         "prediction_set": list(sets),
         "alpha": BTS6.alpha,
         "p_values": {c: round(float(p), 4) for c, p in zip(BTS6.classes, pv)},
@@ -281,10 +292,15 @@ def plot_lightcurve(events, cls: dict, resource_id: str, outdir: Path) -> list[s
 def annotations_for(cls: dict, verdict: dict) -> dict:
     """Flat annotation dict (human-readable summary numbers + the probability vector)."""
     a = cls["anomaly"]
+    top = max(cls["probabilities"], key=cls["probabilities"].get)
+    iv = (cls.get("probability_intervals") or {}).get(top)
     out = {**{f"flare_p_{k}": v for k, v in cls["probabilities"].items()},
         "flare_class": cls["predicted"],
         "flare_model": cls.get("model"),
         "flare_p_max": max(cls["probabilities"].values()),
+        # Venn-Abers interval of the most probable class (flare_p_max): lower and upper probability
+        "flare_p_low": iv[0] if iv else None,
+        "flare_p_high": iv[1] if iv else None,
         "flare_set": "|".join(cls["prediction_set"]),
         "flare_credibility": cls["credibility"],
         "flare_confidence": cls.get("confidence"),

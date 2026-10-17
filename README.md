@@ -72,7 +72,13 @@ its phase by the span of its detections (under 7.5 d the day-5 model, under
 15 d the day-10, under 35 d the day-20, otherwise the full-curve model), posts
 a headline class only when the 90% conformal set is a singleton (or
 "Supernova" when every member of the set is a supernova type), and reports the
-anomaly energy against a known population truncated at the same phase. The new forecast
+anomaly energy against a known population truncated at the same phase. Every class probability also carries a Venn-Abers interval
+(`probability_intervals`, and `flare_p_low`/`flare_p_high` for the most probable class on SkyPortal):
+the lower and upper calibrated probability of that class against the rest, from the same
+out-of-fold calibration as the conformal sets (`flare/venn_abers.py`, tables in `venn_abers.json`
+next to each model). The interval is wider where few calibration objects resemble the object
+(out of fold, about 0.004 for SN Ia and 0.09 for TDEs) and about four times wider for objects
+outside the taxonomy; it is a recalibrated range and need not contain the raw tree probability. The new forecast
 interval grouping and combined anomaly score failed their adoption criteria.
 See [the measured results](docs/unified_results.md).
 
