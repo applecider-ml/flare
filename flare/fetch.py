@@ -121,6 +121,21 @@ def fetch_photometry(oid: str, backend: str = "auto") -> List[Row]:
     return fetch_alerce(oid)
 
 
+# Detection floor shared with the SkyPortal/OSG bridges. FLARE is trained on ZTF alert detections,
+# whose signal-to-noise (1.0857 / magerr) goes down to about 1.5: 8.9% of them are below 5 and 0.29%
+# below 3. A floor of 3 removes forced-photometry noise far from the training distribution while
+# keeping almost every alert detection; the bridges should in addition keep alert photometry only.
+MIN_SNR = 3.0
+
+
+def detections(rows: List[Row], min_snr: Optional[float] = MIN_SNR) -> List[Row]:
+    """Keep rows with a finite magnitude and an error no larger than 1.0857 / min_snr."""
+    if min_snr is None:
+        return list(rows)
+    lim = 1.0857 / float(min_snr)
+    return [r for r in rows if r[2] is not None and r[3] is not None and np.isfinite(r[2]) and np.isfinite(r[3]) and 0 < r[3] <= lim]
+
+
 def to_events(rows: List[Row],
               horizon_days: float = DEFAULT_HORIZON) -> Optional[np.ndarray]:
     """(mjd, fid, mag, magerr) -> (N, 15) event array; None if empty."""
