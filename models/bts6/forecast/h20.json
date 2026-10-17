@@ -1,0 +1,570 @@
+{
+ "horizon_days": 20,
+ "grid_days": [
+  25,
+  30,
+  40,
+  50,
+  60,
+  75,
+  90
+ ],
+ "bands": [
+  "g",
+  "r"
+ ],
+ "target": "magnitude relative to the brightest detection within the horizon",
+ "feature_names": [
+  "n_obs_total",
+  "n_bands",
+  "span_total",
+  "g_n_obs",
+  "g_span",
+  "g_gap_median",
+  "g_gap_max",
+  "g_t_peak",
+  "g_logflux_peak",
+  "g_logflux_last_minus_peak",
+  "g_frac_obs_before_peak",
+  "g_snr_mean",
+  "g_amplitude",
+  "g_anderson_darling_normal",
+  "g_beyond_1_std",
+  "g_beyond_2_std",
+  "g_cusum",
+  "g_eta_e",
+  "g_excess_variance",
+  "g_inter_percentile_range_10",
+  "g_inter_percentile_range_25",
+  "g_kurtosis",
+  "g_linear_fit_slope",
+  "g_linear_fit_slope_sigma",
+  "g_linear_fit_reduced_chi2",
+  "g_linear_trend",
+  "g_linear_trend_sigma",
+  "g_linear_trend_noise",
+  "g_magnitude_percentage_ratio_40_5",
+  "g_magnitude_percentage_ratio_20_10",
+  "g_maximum_slope",
+  "g_mean",
+  "g_mean_variance",
+  "g_median_absolute_deviation",
+  "g_median_buffer_range_percentage_10",
+  "g_percent_amplitude",
+  "g_percent_difference_magnitude_percentile_5",
+  "g_chi2",
+  "g_skew",
+  "g_standard_deviation",
+  "g_stetson_K",
+  "g_weighted_mean",
+  "g_bazin_amplitude",
+  "g_bazin_baseline",
+  "g_bazin_reference_time",
+  "g_bazin_rise_time",
+  "g_bazin_fall_time",
+  "g_bazin_reduced_chi2",
+  "g_bazin_fall_over_rise",
+  "r_n_obs",
+  "r_span",
+  "r_gap_median",
+  "r_gap_max",
+  "r_t_peak",
+  "r_logflux_peak",
+  "r_logflux_last_minus_peak",
+  "r_frac_obs_before_peak",
+  "r_snr_mean",
+  "r_amplitude",
+  "r_anderson_darling_normal",
+  "r_beyond_1_std",
+  "r_beyond_2_std",
+  "r_cusum",
+  "r_eta_e",
+  "r_excess_variance",
+  "r_inter_percentile_range_10",
+  "r_inter_percentile_range_25",
+  "r_kurtosis",
+  "r_linear_fit_slope",
+  "r_linear_fit_slope_sigma",
+  "r_linear_fit_reduced_chi2",
+  "r_linear_trend",
+  "r_linear_trend_sigma",
+  "r_linear_trend_noise",
+  "r_magnitude_percentage_ratio_40_5",
+  "r_magnitude_percentage_ratio_20_10",
+  "r_maximum_slope",
+  "r_mean",
+  "r_mean_variance",
+  "r_median_absolute_deviation",
+  "r_median_buffer_range_percentage_10",
+  "r_percent_amplitude",
+  "r_percent_difference_magnitude_percentile_5",
+  "r_chi2",
+  "r_skew",
+  "r_standard_deviation",
+  "r_stetson_K",
+  "r_weighted_mean",
+  "r_bazin_amplitude",
+  "r_bazin_baseline",
+  "r_bazin_reference_time",
+  "r_bazin_rise_time",
+  "r_bazin_fall_time",
+  "r_bazin_reduced_chi2",
+  "r_bazin_fall_over_rise",
+  "i_n_obs",
+  "i_span",
+  "i_gap_median",
+  "i_gap_max",
+  "i_t_peak",
+  "i_logflux_peak",
+  "i_logflux_last_minus_peak",
+  "i_frac_obs_before_peak",
+  "i_snr_mean",
+  "i_amplitude",
+  "i_anderson_darling_normal",
+  "i_beyond_1_std",
+  "i_beyond_2_std",
+  "i_cusum",
+  "i_eta_e",
+  "i_excess_variance",
+  "i_inter_percentile_range_10",
+  "i_inter_percentile_range_25",
+  "i_kurtosis",
+  "i_linear_fit_slope",
+  "i_linear_fit_slope_sigma",
+  "i_linear_fit_reduced_chi2",
+  "i_linear_trend",
+  "i_linear_trend_sigma",
+  "i_linear_trend_noise",
+  "i_magnitude_percentage_ratio_40_5",
+  "i_magnitude_percentage_ratio_20_10",
+  "i_maximum_slope",
+  "i_mean",
+  "i_mean_variance",
+  "i_median_absolute_deviation",
+  "i_median_buffer_range_percentage_10",
+  "i_percent_amplitude",
+  "i_percent_difference_magnitude_percentile_5",
+  "i_chi2",
+  "i_skew",
+  "i_standard_deviation",
+  "i_stetson_K",
+  "i_weighted_mean",
+  "i_bazin_amplitude",
+  "i_bazin_baseline",
+  "i_bazin_reference_time",
+  "i_bazin_rise_time",
+  "i_bazin_fall_time",
+  "i_bazin_reduced_chi2",
+  "i_bazin_fall_over_rise",
+  "g_r_n",
+  "g_r_mean",
+  "g_r_wmean",
+  "g_r_std",
+  "g_r_slope",
+  "g_r_early",
+  "g_r_late",
+  "g_r_late_minus_early",
+  "r_i_n",
+  "r_i_mean",
+  "r_i_wmean",
+  "r_i_std",
+  "r_i_slope",
+  "r_i_early",
+  "r_i_late",
+  "r_i_late_minus_early",
+  "gr_peak_dt",
+  "gr_peak_logflux_ratio",
+  "gr_n_ratio",
+  "host_sep",
+  "host_r",
+  "host_i",
+  "host_gr",
+  "host_ri",
+  "host_iz",
+  "host_ext",
+  "n_ext_30",
+  "near_sep",
+  "near_ext",
+  "gaia_sep",
+  "parallax",
+  "parallax_over_error",
+  "pm",
+  "pm_over_error",
+  "gaia_g",
+  "ruwe",
+  "wise_sep",
+  "w1",
+  "w1w2",
+  "w2w3",
+  "pos_sep",
+  "pos_g",
+  "pos_r",
+  "pos_i",
+  "pos_gr",
+  "pos_ri",
+  "pos_star",
+  "pos_ndet",
+  "M_pseudo"
+ ],
+ "long_format_extra": [
+  "fc_day",
+  "fc_band"
+ ],
+ "models": {
+  "pooled": "h20_pooled.txt",
+  "pooled_w": "h20_pooled.txt",
+  "q16": "h20_q16.txt",
+  "q84": "h20_q84.txt"
+ },
+ "params": {
+  "objective": "regression_l1",
+  "verbosity": -1,
+  "num_threads": 0,
+  "seed": 42,
+  "learning_rate": 0.02,
+  "num_leaves": 127,
+  "min_child_samples": 100,
+  "feature_fraction": 0.6,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "lambda_l2": 0.0
+ },
+ "class_weights": {
+  "beta": 0.0,
+  "weights": {
+   "SN_Ia": 1.0,
+   "SN_CC": 1.0,
+   "SLSN": 1.0,
+   "AGN": 1.0,
+   "TDE": 1.0,
+   "CV": 1.0
+  }
+ },
+ "routing": "pooled_w when the FLARE classifier's argmax is SLSN, AGN, TDE or CV; pooled otherwise",
+ "conformal": {
+  "scale": "max(|q84-q16|/2, 0.05)",
+  "multipliers": {
+   "pooled": {
+    "m68": 1.3214374838202196,
+    "m95": 3.135227891468525
+   },
+   "pooled_w": {
+    "m68": 1.3214374838202196,
+    "m95": 3.135227891468525
+   }
+  },
+  "anchored_halfwidth_at_horizon": {
+   "hw68": 0.18849955179861622,
+   "hw95": 0.5188919750901021
+  },
+  "mondrian": {
+   "by": "predicted class (argmax of the FLARE classifier at the forecast horizon)",
+   "grid_days": [
+    25,
+    30,
+    40,
+    50,
+    60,
+    75,
+    90
+   ],
+   "bands": [
+    "g",
+    "r"
+   ],
+   "classes": {
+    "SN_Ia": {
+     "m68": [
+      [
+       1.1695,
+       1.1722,
+       1.1128,
+       1.0057,
+       1.0086,
+       0.9548,
+       0.9178
+      ],
+      [
+       1.2866,
+       1.2417,
+       1.197,
+       1.1915,
+       1.113,
+       1.0833,
+       1.1002
+      ]
+     ],
+     "n": 7364,
+     "m95": [
+      [
+       2.6135,
+       2.671,
+       2.5438,
+       2.3631,
+       2.4431,
+       2.6004,
+       2.7774
+      ],
+      [
+       3.0022,
+       2.9339,
+       2.8581,
+       2.8128,
+       2.7445,
+       2.8075,
+       2.9686
+      ]
+     ]
+    },
+    "SN_CC": {
+     "m68": [
+      [
+       1.6212,
+       1.5565,
+       1.4916,
+       1.513,
+       1.4367,
+       1.4011,
+       1.3476
+      ],
+      [
+       1.2769,
+       1.3814,
+       1.4593,
+       1.4088,
+       1.4463,
+       1.3351,
+       1.2687
+      ]
+     ],
+     "n": 2333,
+     "m95": [
+      [
+       3.8468,
+       3.7385,
+       3.0913,
+       3.2254,
+       2.9043,
+       2.8165,
+       2.7186
+      ],
+      [
+       3.0788,
+       3.0989,
+       3.0038,
+       2.9165,
+       2.8513,
+       2.6499,
+       2.7909
+      ]
+     ]
+    },
+    "SLSN": {
+     "m68": [
+      [
+       1.8941,
+       1.8774,
+       2.1699,
+       2.1659,
+       2.1955,
+       2.2229,
+       1.9097
+      ],
+      [
+       2.0905,
+       1.7244,
+       1.9112,
+       2.0773,
+       2.212,
+       2.1268,
+       1.9334
+      ]
+     ],
+     "n": 209,
+     "m95": [
+      [
+       4.228,
+       3.8062,
+       4.5675,
+       4.3944,
+       4.3347,
+       4.1305,
+       4.9957
+      ],
+      [
+       4.09,
+       4.4207,
+       4.8731,
+       4.6998,
+       5.643,
+       4.3831,
+       3.8263
+      ]
+     ]
+    },
+    "AGN": {
+     "m68": [
+      [
+       2.3089,
+       2.4852,
+       3.0694,
+       2.7645,
+       2.7393,
+       2.3715,
+       2.2536
+      ],
+      [
+       2.1131,
+       2.3467,
+       2.992,
+       2.7811,
+       2.6847,
+       2.3971,
+       2.0689
+      ]
+     ],
+     "n": 251,
+     "m95": [
+      [
+       5.5488,
+       4.8697,
+       8.2223,
+       6.2739,
+       7.0445,
+       5.5252,
+       4.4069
+      ],
+      [
+       5.2585,
+       5.9179,
+       6.642,
+       8.5528,
+       7.8619,
+       6.8913,
+       5.0141
+      ]
+     ]
+    },
+    "TDE": {
+     "m68": [
+      [
+       2.1073,
+       2.6469,
+       3.4162,
+       2.7235,
+       2.7669,
+       2.1425,
+       2.2192
+      ],
+      [
+       2.511,
+       2.6343,
+       2.9665,
+       2.8194,
+       2.3041,
+       1.2978,
+       1.3214
+      ]
+     ],
+     "n": 57,
+     "m95": [
+      [
+       7.017,
+       6.3044,
+       8.63,
+       4.0862,
+       4.9746,
+       7.0249,
+       2.9607
+      ],
+      [
+       7.2438,
+       7.4894,
+       4.8665,
+       5.4967,
+       4.956,
+       4.5441,
+       3.1352
+      ]
+     ]
+    },
+    "CV": {
+     "m68": [
+      [
+       2.5907,
+       2.2596,
+       2.5372,
+       2.8038,
+       2.6528,
+       3.4702,
+       1.3214
+      ],
+      [
+       2.0118,
+       1.9836,
+       1.9129,
+       2.5139,
+       2.806,
+       3.1728,
+       1.3214
+      ]
+     ],
+     "n": 283,
+     "m95": [
+      [
+       4.0791,
+       4.6443,
+       5.2488,
+       5.3455,
+       7.2421,
+       11.0449,
+       3.1352
+      ],
+      [
+       6.2843,
+       7.0373,
+       5.0611,
+       4.7407,
+       9.282,
+       14.3671,
+       3.1352
+      ]
+     ]
+    }
+   },
+   "min_n": 20,
+   "form": "m_c(band, day) = shipped multiplier x q_c / q_all, cross-conformal quantiles of |truth - pooled| / scale",
+   "source": "out-of-fold forecasts of scripts/reconstruction_v2.py, prefix-causal rerun 2026-09-24, all five folds"
+  }
+ },
+ "coverage_on_calibration_split_day50_68": {
+  "SN_Ia": 0.7593582887700535,
+  "SN_CC": 0.6162528216704289,
+  "SLSN": 0.71875,
+  "AGN": 0.46938775510204084,
+  "TDE": 0.7142857142857143,
+  "CV": 0.4666666666666667,
+  "ALL": 0.6840215439856373
+ },
+ "note": "per-class OOF coverage from the 5-fold (\u00a78): SLSN and TDE 0.45-0.65 at nominal 0.68; state next to the band",
+ "training": {
+  "n_fit_plus_es": 9237,
+  "n_cal": 1260,
+  "pool": "bts6 train+val+test",
+  "date": "2026-09-13"
+ },
+ "class_weights_alternative": {
+  "beta": 0.75,
+  "weights": {
+   "SN_Ia": 0.3475731247458953,
+   "SN_CC": 0.7518526688841041,
+   "SLSN": 6.128328138552843,
+   "AGN": 4.289732083138867,
+   "TDE": 11.423620722373279,
+   "CV": 3.715611277866001
+  },
+  "rounds": 3953,
+  "note": "search (results/final_models_search.txt, stage B): routed overall cost +0.015 mag at h=5 against SLSN -0.047 and TDE -0.057; the pre-registered rule (cost <= 0.01) picked beta = 0, so pooled_w == pooled; this file is the beta = 0.75 alternative for a rare-class-first deployment, same conformal scale"
+ },
+ "note_models": "pooled_w (beta=0) is identical to pooled and points at the same file; the beta=0.75 alternative (h*_pooled_w075.txt) is distributed as a release asset, not in git"
+}
