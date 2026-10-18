@@ -1,36 +1,21 @@
-# FLARE inference weights
+# FLARE weights
 
-Everything needed to classify a light curve. Pure LightGBM + JSON — no torch.
+Plain LightGBM boosters and JSON, checked against SHA-256 manifests at load time; no torch.
+The one exception is `consensus.pkl.gz`, a pickled LUNA pipeline that is read only when
+`luna-ood` 0.3 or later is installed, and only after its SHA-256 matches the manifest.
 
-| File | What |
+| directory | content |
 |---|---|
-| `flare_lgbm.txt` | LightGBM booster, 160 physics features, 1140 trees — the day-100 model |
-| `conformal.json` | Mondrian LAC per-class quantiles (α=0.10), calibrated on val (N=1991) |
-| `model_card.json` | hyperparameters, class-weight β, Optuna val score |
-| `flare_lgbm_day10.txt` | early-time model (features from the first 10 days) |
+| `bts6/` | the six-class classifier of the paper (SN Ia, SN CC, SLSN, AGN, TDE, CV): five-way top level (`top.txt`), SLSN head (`slsn_branch.txt`), cross-conformal calibration (`conformal.json`), anomaly space and calibration (`ad_space.txt`, `anomaly_calibration.json`), Venn-Abers tables (`venn_abers.json`), blind-consensus anomaly alarm at 1%, 5% and 10% false-alarm rates (`consensus.pkl.gz`), model card and manifest |
+| `bts6/early/h5`, `h10`, `h20` | the same classifier trained on light curves truncated at 5, 10 and 20 days, each with its own calibration |
+| `bts6/forecast/`, `bts6/forecast_blend/`, `bts6/pe_ia/` | forecast and SN Ia parameter-estimation models of `flare.load_analysis()` |
+| `bts6/onnx/` | ONNX exports of the top level and the SLSN head |
 
-Load: `FlareClassifier.from_pretrained()` (defaults to these files).
-Retrain/recalibrate: `python scripts/train.py --data-dir <photo_events>`.
+Load: `flare.load_classifier()` (full curve) or `flare.load_classifier(horizon_days=5)`.
+The full-curve and early models are fitted on the benchmark's train and validation splits
+(`benchmark/`), so the test split gives an honest evaluation; the paper's numbers come from
+five-fold cross-validation (`paper/`). Training scripts: `scripts/train_bts6.py`,
+`scripts/train_early_cc.py`, `scripts/export_venn_abers.py`, `scripts/export_consensus.py`.
 
-The reported numbers were produced by exactly these weights (see
-`scripts/evaluate.py`).
-
-## bts6 (the paper's headline scheme)
-
-`models/bts6/` carries the hierarchical classifier of the BTS paper:
-
-| file | role |
-|---|---|
-| `top.txt` | five-way top level (SN_Ia, SN_CC+, AGN, TDE, CV), 171 features (160 light-curve + host block + M_pseudo) |
-| `slsn_branch.txt` | binary SLSN head inside SN_CC+, threshold in the model card |
-| `conformal.json` | Mondrian per-class thresholds, alpha = 0.10, calibrated on a validation half untouched by early stopping |
-| `model_card.json` | branch threshold, training provenance, and the five-fold numbers to quote |
-
-Trained by `scripts/train_bts6.py` on the benchmark's training split with the
-external blocks blanked on 30% of rows (the missingness guard). Performance
-claims should always come from the paper's five-fold cross-evaluation, not
-from any single split.
-
-The `broad5` files above remain the original AppleCiDEr-era release used by
-the tutorial notebooks (including `flare_lgbm_no_tde.txt`, the teaching model
-with TDEs deliberately removed).
+The five-class weights of the original release (`broad5`) are no longer shipped; train them on
+the benchmark with `python scripts/train.py` if needed.

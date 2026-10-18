@@ -15,9 +15,10 @@ import pandas as pd
 
 import os
 
+# default: the BTS benchmark of this repository, prepared by flare.benchmark.prepare()
 DATA_DIR = Path(os.environ.get(
     "FLARE_DATA",
-    "/work/hdd/bcrv/ffontinelenunes/data/AppleCider/photo_events"))
+    str(Path(__file__).resolve().parents[1] / "benchmark")))
 HORIZON_DAYS = 100.0
 # Pairing window for per-event g−r / r−i colours. The BTS event files were built
 # with 1.5 d; FLARE_COLOR_WINDOW overrides it for sensitivity studies.

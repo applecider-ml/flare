@@ -11,8 +11,9 @@ threshold, the other half is touched by nothing except conformal calibration.
 The test split is never read here at all; the model card quotes the paper's
 five-fold numbers rather than anything computed in this script.
 
-Run:  python scripts/train_bts6.py [--data /path/to/bts_dataset]
+Run:  python scripts/train_bts6.py [--data /path/to/paper_data]
 """
+import os
 import argparse
 import json
 import sys
@@ -64,7 +65,7 @@ def fit(params, X, y, Xes, yes, w):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", default="/projects/bcrv/asasli/later/bts_dataset")
+    ap.add_argument("--data", default=os.environ.get("FLARE_PAPER_DATA", str(Path(__file__).resolve().parents[1] / "paper_data")))
     args = ap.parse_args()
     DATA = Path(args.data)
     OUT = PKG / "models" / "bts6"

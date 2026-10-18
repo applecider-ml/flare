@@ -20,6 +20,7 @@ ADOPTION B1&B2&B3. Unblended real_delta is a control, never a fallback candidate
 Report real points, per-class, lead bins, coverage and day50 grid metrics.
 Separate final train-only fitting/calibration is required before optional use.
 """
+import os
 import argparse
 from concurrent.futures import ProcessPoolExecutor,as_completed
 import json
@@ -89,7 +90,7 @@ def fold_job(args,fold,h):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--data',type=Path,default=api.PKG.parent/'bts_dataset')
+    p.add_argument('--data',type=Path,default=Path(os.environ.get('FLARE_PAPER_DATA', api.PKG / 'paper_data')))
     p.add_argument('--source',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
     p.add_argument('--threads',type=int,default=4);p.add_argument('--workers',type=int,default=3)
     a=p.parse_args();a.out.mkdir(parents=True,exist_ok=False)

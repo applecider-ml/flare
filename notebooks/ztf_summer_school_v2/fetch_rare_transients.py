@@ -1,10 +1,13 @@
-"""Fetch real out-of-catalog transients from the BOOM broker (or ALeRCE).
+"""Fetch the peculiar transients of the hackathon from the BOOM broker (or ALeRCE).
 
-These classes do NOT exist in the training taxonomy — they are genuinely new to
-every model in this repository. The categories mirror the out-of-taxonomy
-validation of ASTRANet (Sasli et al. 2026, arXiv:2607.08044), photometric
-edition. The script downloads ZTF difference photometry, converts it to the
-training event format, and saves one .npz per object into rare_transients/.
+These objects are peculiar transients chosen for the anomaly-detection hackathon. The
+categories mirror the out-of-taxonomy validation of ASTRANet (Sasli et al. 2026,
+arXiv:2607.08044), photometric edition. Their status depends on the taxonomy: in the legacy
+five-class scheme none of them has a class of its own, while in the six-class bts6 scheme six of
+them carry an in-taxonomy BTS label (SN_CC or SLSN) and sit in the benchmark's train or validation
+split, so only AT2018cow (FBOT) and AT2019abn (ILRT) are out of taxonomy (both are in the
+benchmark's anomaly split). The script downloads ZTF difference photometry, converts it to the
+event format of the benchmark, and saves one .npz per object into rare_transients/.
 
 Objects (API-verified, pass the survey quality filter: >=8 detections,
 >=2 per g/r band, within 100 days of first detection):
@@ -16,12 +19,12 @@ Objects (API-verified, pass the survey quality filter: >=8 detections,
     SN Iax    : SN2020kyg
 
 GRB afterglows (e.g. AT2021any) and the jetted TDE AT2022cmc fade too fast to
-accumulate 8 public ZTF detections — an honest cadence limitation worth
+accumulate 8 public ZTF detections, an honest cadence limitation worth
 discussing in class.
 
 Backends
 --------
-BOOM (default when configured): the team's alert broker. Set either
+BOOM (default when configured): the alert broker. Set either
     BOOM_URL + BOOM_TOKEN                  (pre-issued token), or
     BOOM_URL + BOOM_USERNAME + BOOM_PASSWORD   (token via POST /auth)
 Photometry is read Kowalski-style with POST /queries/find on the
@@ -133,7 +136,7 @@ class Boom:
 
 # ------------------------------------------------------------- conversion --
 def to_events(rows):
-    """(mjd, fid, magpsf, sigmapsf) rows -> (n,15) training-format array."""
+    """(mjd, fid, magpsf, sigmapsf) rows -> (n,15) benchmark event array."""
     rows = sorted((m, int(f) - 1, mag, err) for m, f, mag, err in rows)
     mjd = np.array([r[0] for r in rows])
     keep = mjd <= mjd[0] + HORIZON

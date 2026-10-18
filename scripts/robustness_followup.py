@@ -31,6 +31,7 @@ NOT proof that all training measurements/labels were available at that date.
 No new production weights/defaults are changed by this research script.
 All intervals use2000 paired object draws conditional on fitted models.
 """
+import os
 import argparse
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import json
@@ -162,7 +163,7 @@ def forecast_job(args, year, h):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--data',type=Path,default=api.PKG.parent/'bts_dataset')
+    p.add_argument('--data',type=Path,default=Path(os.environ.get('FLARE_PAPER_DATA', api.PKG / 'paper_data')))
     p.add_argument('--source',type=Path,required=True);p.add_argument('--out',type=Path,required=True)
     p.add_argument('--threads',type=int,default=4);p.add_argument('--workers',type=int,default=3)
     a=p.parse_args();a.out.mkdir(parents=True,exist_ok=False)

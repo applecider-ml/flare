@@ -8,6 +8,7 @@ The out-of-fold probabilities are also saved (`--oof-dir`) so the tables can be 
 Run: python scripts/export_venn_abers.py --models <repo>/models/bts6 --threads 16
 """
 import argparse, hashlib, json, sys
+import os
 from pathlib import Path
 import numpy as np, pandas as pd
 from joblib import Parallel, delayed
@@ -19,7 +20,7 @@ from evaluate_unified import context_table, SIX  # noqa: E402
 from train_early_cc import hierarchy_nocal  # noqa: E402
 from flare.context import lumdist_mpc  # noqa: E402
 from flare.venn_abers import build_table  # noqa: E402
-ROOT = PKG.parent / "bts_dataset"
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
 
 
 def pool_X(h, pool, n):

@@ -1,8 +1,10 @@
 """Compare flare-rs against the Python package on the dumped cases."""
 import json, subprocess, sys, numpy as np
-P = '/projects/bcrv/asasli/later/flare/rust/parity/'
-BIN = __import__('os').environ.get('FLARE_BIN', '/projects/bcrv/asasli/later/flare/rust/target/release/flare')
-MODEL = '/projects/bcrv/asasli/later/flare/models/bts6'
+import os
+P = os.path.dirname(os.path.abspath(__file__)) + '/'
+REPO = os.path.abspath(os.path.join(P, '..', '..'))
+BIN = __import__('os').environ.get('FLARE_BIN', os.path.join(REPO, 'rust', 'target', 'release', 'flare'))
+MODEL = os.path.join(REPO, 'models', 'bts6')
 def run(*a): return subprocess.run([BIN, *a], capture_output=True, text=True, check=True).stdout.strip().splitlines()
 
 # ---- 1. LightGBM evaluator: raw scores on 3000 rows

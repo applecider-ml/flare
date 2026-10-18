@@ -1,0 +1,35 @@
+{
+ "classes": [
+  "SN_Ia",
+  "SN_CC",
+  "SLSN",
+  "AGN",
+  "TDE",
+  "CV"
+ ],
+ "params": {
+  "objective": "multiclass",
+  "num_class": 6,
+  "metric": "multi_logloss",
+  "verbosity": -1,
+  "bagging_freq": 1,
+  "max_depth": -1,
+  "num_threads": 0,
+  "seed": 42,
+  "learning_rate": 0.1950692812289026,
+  "num_leaves": 13,
+  "min_child_samples": 67,
+  "feature_fraction": 0.30459698531551155,
+  "bagging_fraction": 0.9851573881769599,
+  "lambda_l1": 0.08728881294753024,
+  "lambda_l2": 9.137614864163492
+ },
+ "beta": 0.8845129407934219,
+ "trees": 89,
+ "test": {
+  "accuracy": 0.8895238095238095,
+  "balanced_accuracy": 0.7157924173990221,
+  "macro_f1": 0.7064977389911705,
+  "macro_auprc": 0.7684755018376009
+ }
+}

@@ -16,9 +16,9 @@
     "parent_provenance_sha256": "03c2dab00853947746843c0c2edfc4ad3661438417ea67db9b7989885ce7d2e3",
     "recency_sha256": "cfce427f8b072cb22879b84170fef24e55b73d3ecee7a3d5520be13b1ed1a01f",
     "arguments": {
-      "data": "/projects/bcrv/asasli/later/bts_dataset",
+      "data": "paper_data",
       "source": "bts_dataset/results/blend_source_20260916",
-      "out": "/projects/bcrv/asasli/later/bts_dataset/results/forecast_blend_causal_20260924",
+      "out": "paper_data/results/forecast_blend_causal_20260924",
       "threads": 4,
       "workers": 3
     },
