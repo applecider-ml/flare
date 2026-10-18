@@ -35,7 +35,7 @@ from flare.config import HOST_COLS, GW_COLS, POS_COLS  # noqa: E402
 from flare.data import load_events  # noqa: E402
 from flare.hierarchical import HierarchicalFlare  # noqa: E402
 
-ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python scripts/setup_data.py
 
 
 def hierarchy_nocal(X, y, tr, es, args):

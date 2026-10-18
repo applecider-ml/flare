@@ -30,8 +30,9 @@ research = ["torch>=2.2"]
 figures = ["matplotlib>=3.7", "shap>=0.44"]
 # the analysis-service path: callback upload + the optional PNG
 skyportal = ["requests>=2.31", "matplotlib>=3.7", "flare-transients[consensus]"]
-# the blind-consensus anomaly alarm (flare.consensus); without it FLARE uses the energy alone
-consensus = ["luna-ood @ git+https://github.com/asasli/luna"]
+# the blind-consensus anomaly alarm (flare.consensus); without it FLARE uses the energy alone.
+# An archive URL rather than git+https, so that images without git (python:*-slim) can install it
+consensus = ["luna-ood @ https://github.com/asasli/luna/archive/refs/heads/main.zip", "scikit-learn>=1.8"]
 # the OSG runtime image on top of that (jax is not used by FLARE itself; the OSG
 # wrapper environment expects it for its CPU-affinity setup)
 osg = ["flare-transients[skyportal]", "jax"]

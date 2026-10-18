@@ -73,8 +73,7 @@ annotations.
 flare/       the package (features, models, conformal sets, Venn-Abers, anomaly layer, SkyPortal)
 models/      trained weights with manifests (full-curve, day 5/10/20, forecast, SN Ia PE)
 benchmark/   the BTS benchmark: light curves, splits, features and catalogue context (DATASET.md)
-paper/       the scripts behind every number and figure of the paper (paper/README.md)
-scripts/     training and export scripts for the shipped models
+scripts/     training and export scripts for the shipped models, and the scripts that build the benchmark
 notebooks/   tutorials: flare_tutorial, why_flare_works, similarity_search, the Rubin lesson
 docs/        the analysis guide (unified_analysis.md) and research notes (research_notes.md)
 ```
