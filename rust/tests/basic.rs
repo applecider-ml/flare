@@ -93,7 +93,7 @@ fn quality_cut() {
 #[test]
 #[ignore = "needs the bts6 artefacts of the Python repository"]
 fn end_to_end_bts6() {
-    let model = Flare::load("/projects/bcrv/asasli/later/flare/models/bts6").unwrap();
+    let model = Flare::load(concat!(env!("CARGO_MANIFEST_DIR"), "/../models/bts6")).unwrap();
     let dets = detections_from_rows(&synthetic());
     let r = model.predict(&dets, &HashMap::new(), None).unwrap();
     let s: f64 = r.proba.iter().sum();

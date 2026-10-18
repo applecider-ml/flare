@@ -35,7 +35,7 @@ def main(argv=None):
         p.add_argument("-o", "--out", default=None,
                        help="output file (default: stdout for predict, "
                             "flare_report.html for report)")
-        p.add_argument("--scheme", default="bts6", help="bts6 (default) or broad5")
+        p.add_argument("--scheme", default="bts6", help="bts6 (default); broad5 needs weights trained with scripts/train.py")
         p.add_argument("--horizon", type=float, default=100.0,
                        help="days from first detection to use (default 100)")
     a = ap.parse_args(argv)

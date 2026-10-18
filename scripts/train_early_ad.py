@@ -4,6 +4,7 @@ Gaia/WISE; no M_pseudo, no counterpart block). Trained on the train split, calib
 validation split and the 52 out-of-taxonomy rarities at the same horizon. Kept only where it
 beats the full-curve booster's AUROC at that horizon (the comparison is printed)."""
 import argparse, hashlib, json, sys
+import os
 from pathlib import Path
 import lightgbm as lgb, numpy as np, pandas as pd
 from scipy.special import logsumexp
@@ -17,7 +18,7 @@ from evaluate_unified import context_table, SIX, TOP  # noqa: E402
 from flare.analysis import feature_frame, observed_events  # noqa: E402
 from flare.config import AD_SPACE_COLS  # noqa: E402
 from flare.data import load_events  # noqa: E402
-ROOT = PKG.parent / "bts_dataset"
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
 
 
 def main():

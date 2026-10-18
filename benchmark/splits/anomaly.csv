@@ -51,3 +51,4 @@ ZTF23aatzhso,events/ZTF23aatzhso.npz,nova,CV?,ambiguous,59,29,30,True,,ambiguous
 ZTF23abigaao,events/ZTF23abigaao.npz,nova,CV?,ambiguous,13,5,8,True,,ambiguous
 ZTF23abiwrwo,events/ZTF23abiwrwo.npz,nova,CV?,ambiguous,33,15,18,True,,ambiguous
 ZTF24abartsb,events/ZTF24abartsb.npz,nova,CV?,ambiguous,55,26,27,True,,ambiguous
+ZTF18abcfcoo,events/ZTF18abcfcoo.npz,FBOT,NOVEL,novel,15,4,11,True,,novel

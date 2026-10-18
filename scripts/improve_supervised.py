@@ -45,6 +45,7 @@ Models/checkpoints are research artifacts; no production default overwritten.
 Outputs stage on local scratch to avoid known project inode-quota interruptions.
 """
 from __future__ import annotations
+import os
 import argparse
 from concurrent.futures import ProcessPoolExecutor,as_completed
 import hashlib
@@ -312,7 +313,7 @@ def prepare_run(a):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--data',type=Path,default=PKG.parent/'bts_dataset');p.add_argument('--out',type=Path,required=True)
+    p.add_argument('--data',type=Path,default=Path(os.environ.get('FLARE_PAPER_DATA', PKG / 'paper_data')));p.add_argument('--out',type=Path,required=True)
     p.add_argument('--threads',type=int,default=4);p.add_argument('--workers',type=int,default=3)
     a=p.parse_args();prepare_run(a);args={k:str(v) if isinstance(v,Path) else v for k,v in vars(a).items()}
     with ProcessPoolExecutor(max_workers=a.workers) as pool:

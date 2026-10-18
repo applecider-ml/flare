@@ -1,4 +1,4 @@
-"""Train FLARE from raw data — reproduces models/flare_lgbm.txt + conformal.json.
+"""Train FLARE from raw data — writes models/flare_lgbm.txt + conformal.json (the five-class model).
 
 Steps:
   1. quality-filter each split
@@ -6,10 +6,11 @@ Steps:
   3. Optuna-tune LightGBM (hyperparams + class-weight beta) on val
   4. refit, save booster + Mondrian conformal calibrated on val
 
-Data dir must contain manifest_{train,val,test}.csv, per-object .npz, and
-feature_stats_day100.npz. Set FLARE_DATA or pass --data-dir.
+Data: by default the BTS benchmark of this repository (flare.benchmark.prepare() writes
+manifest_{train,val,test}.csv and unpacks the light curves). Set FLARE_DATA or pass --data-dir
+for another directory with the same layout.
 
-Run:  python scripts/train.py --data-dir /path/to/photo_events --trials 100
+Run:  python scripts/train.py [--data-dir DIR] --trials 100
 """
 import argparse
 import json
@@ -98,6 +99,9 @@ def main():
     args = ap.parse_args()
     if args.data_dir:
         D.DATA_DIR = Path(args.data_dir)
+    elif D.DATA_DIR.resolve() == (Path(__file__).resolve().parents[1] / "benchmark").resolve():
+        from flare import benchmark
+        benchmark.prepare()
     tag = "" if args.horizon == 100.0 else f"_day{int(args.horizon)}"
 
     tr = extract_split("train", args.horizon, args.workers)

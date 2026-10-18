@@ -1,6 +1,6 @@
 """Evaluate FLARE on a labelled split: bootstrap CIs + conformal coverage.
 
-Run:  python scripts/evaluate.py --data-dir /path/to/photo_events --split test
+Run:  python scripts/evaluate.py [--data-dir DIR] --split test
 """
 import argparse
 import sys
@@ -26,6 +26,9 @@ def main():
     args = ap.parse_args()
     if args.data_dir:
         D.DATA_DIR = Path(args.data_dir)
+    elif D.DATA_DIR.resolve() == (Path(__file__).resolve().parents[1] / "benchmark").resolve():
+        from flare import benchmark
+        benchmark.prepare()
 
     clf = FlareClassifier.from_pretrained()
     df = D.load_manifest(args.split)

@@ -3,6 +3,7 @@ which no fit or calibration touched: full-curve model on full-curve features, ph
 horizon caches. Writes `deployed_check` into each conformal.json and regenerates the manifests.
 Run: python scripts/deployed_check.py"""
 import hashlib, json, sys
+import os
 from pathlib import Path
 import numpy as np, pandas as pd
 PKG = Path(__file__).resolve().parents[1]
@@ -10,7 +11,7 @@ sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG / "scripts"))
 from evaluate_unified import context_table, SIX  # noqa: E402
 from flare import load_classifier  # noqa: E402
 from flare.context import lumdist_mpc  # noqa: E402
-ROOT = PKG.parent / "bts_dataset"
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
 
 def check(clf, X, y):
     sets = clf.prediction_sets(X.reindex(columns=clf.feature_names))

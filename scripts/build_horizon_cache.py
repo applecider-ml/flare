@@ -8,6 +8,7 @@ Run: python scripts/build_horizon_cache.py [--threads 14] [--horizons 5 10 20]
 """
 import argparse
 from multiprocessing import Pool
+import os
 from pathlib import Path
 import sys
 
@@ -20,7 +21,7 @@ from flare.analysis import feature_frame, observed_events  # noqa: E402
 from flare.data import load_events  # noqa: E402
 from evaluate_unified import context_table  # noqa: E402
 
-ROOT = PKG.parent / "bts_dataset"
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
 _CTX = None
 
 

@@ -43,6 +43,11 @@ class FlareClassifier:
     def from_pretrained(cls, model_path: Union[str, Path] = DEFAULT_MODEL,
                         conformal_path: Union[str, Path] = DEFAULT_CONFORMAL):
         import lightgbm as lgb
+        if not Path(model_path).exists():
+            raise FileNotFoundError(
+                f"{model_path} not found: the five-class (broad5) weights are no longer shipped. "
+                "Train them on the benchmark with `python scripts/train.py` (it writes models/flare_lgbm.txt "
+                "and models/conformal.json), or use the six-class model, flare.load_classifier().")
         booster = lgb.Booster(model_file=str(model_path))
         qhat, alpha = (None, 0.10)
         if Path(conformal_path).exists():

@@ -8,6 +8,7 @@ These models were TRAINED with historical colors; rescoring isolates corrected
 test-time preprocessing, not fully causal retraining. Prior headline results
 using the historical caches must be identified as such.
 """
+import os
 import argparse
 from concurrent.futures import ProcessPoolExecutor,as_completed
 import json
@@ -58,7 +59,7 @@ def rescore(args,h,fold):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--data',type=Path,default=api.PKG.parent/'bts_dataset')
+    p.add_argument('--data',type=Path,default=Path(os.environ.get('FLARE_PAPER_DATA', api.PKG / 'paper_data')))
     p.add_argument('--source',type=Path,required=True);p.add_argument('--initial',type=Path,required=True)
     p.add_argument('--out',type=Path,required=True);a=p.parse_args();a.out.mkdir(parents=True,exist_ok=False)
     df,y=api.population(a.data);audit=[];tables={}

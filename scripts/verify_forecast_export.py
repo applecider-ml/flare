@@ -4,6 +4,7 @@ Current prefix colors intentionally differ from the historical training cache.
 Check other raw features, quantify changed colors, and label cached-feature
 replay separately from current raw-input inference.
 """
+import os
 import argparse
 import json
 from pathlib import Path
@@ -22,7 +23,7 @@ from flare.forecast_blend import BlendForecaster
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('directory', type=Path)
-    parser.add_argument('--data', type=Path, default=api.PKG.parent / 'bts_dataset')
+    parser.add_argument('--data', type=Path, default=Path(os.environ.get('FLARE_PAPER_DATA', api.PKG / 'paper_data')))
     a = parser.parse_args()
     df, _ = api.population(a.data)
     parts = np.load(a.directory / 'partitions.npz')

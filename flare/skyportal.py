@@ -117,15 +117,20 @@ def _classifier(horizon):
             cal = root / "anomaly_calibration.json"
             clf.anomaly_cal = json.loads(cal.read_text()) if cal.exists() else None
         from .venn_abers import load_table
+        from . import consensus
         root = Path(BTS6.model_paths["top"]).parent
-        clf.va_table = load_table((root if horizon is None else root / "early" / f"h{int(horizon)}") / "venn_abers.json")
+        mdir = root if horizon is None else root / "early" / f"h{int(horizon)}"
+        clf.va_table = load_table(mdir / "venn_abers.json")
+        # blind consensus over the LUNA scorers, calibrated at this phase (None without luna-ood)
+        clf.consensus = consensus.load(mdir)
         _CLASSIFIERS[horizon] = clf
     return _CLASSIFIERS[horizon]
 
 
 def classify(X, base_rate: float, horizon=None) -> dict:
-    """Probabilities, conformal set and p-values from the phase-matched classifier; the anomaly
-    energy always from the full-curve AD space, flagged uncalibrated under an early model."""
+    """Probabilities, conformal set and p-values from the phase-matched classifier. The anomaly
+    alarm comes from the phase-matched blind consensus when it ships (flare.consensus), at
+    false-alarm rates of 1%, 5% and 10%; otherwise from the energy and its known population."""
     import numpy as np
     from .config import BTS6
 
@@ -139,6 +144,15 @@ def classify(X, base_rate: float, horizon=None) -> dict:
     an = scorer.anomaly_probability(X.reindex(columns=full.feature_names), base_rate=base_rate)[0]
     known = np.asarray(scorer.anomaly_cal["known_energies"], dtype=float)
     calibrated = scorer is full and horizon is None or scorer is clf
+    cons = None
+    booster = getattr(clf, "ad_space", None) or getattr(full, "ad_space", None)
+    if getattr(clf, "consensus", None) is not None and booster is not None:
+        cons = clf.consensus.score(X.reindex(columns=full.feature_names), booster)[0]
+    if cons is not None:
+        alarm_p, alarms = cons["p_value"], cons["alarms"]
+    else:       # energy: the conformal novelty p-value against its known population
+        alarm_p = float(an.get("novelty_p", float("nan")))
+        alarms = {a: bool(alarm_p <= a) for a in (0.01, 0.05, 0.10)}
     label = BTS6.classes[int(P.argmax())]
     order = np.argsort(pv)[::-1]
     n_cal_label = len(clf.cal_scores[label]) if getattr(clf, "cal_scores", None) else None
@@ -180,8 +194,16 @@ def classify(X, base_rate: float, horizon=None) -> dict:
             # calibrated: the percentile, novelty p and 1% FAR threshold refer to a known population at
             # the same phase (full curves, or the validation split truncated at the model's horizon);
             # without a phase calibration the full-curve numbers are reported for the record only
-            "calibrated": bool(calibrated),
-            "calibration": "full" if scorer is full else f"h{horizon}",
+            "calibrated": bool(calibrated or cons is not None),
+            "calibration": ("full" if horizon is None else f"h{horizon}") if cons is not None
+                           else ("full" if scorer is full else f"h{horizon}"),
+            # the alarm: blind consensus when shipped, else energy; p is its conformal p-value and
+            # alarm_far the smallest false-alarm rate (1%, 5%, 10%) at which the object is flagged
+            "alarm_score": "consensus" if cons is not None else "energy",
+            "consensus": None if cons is None else round(cons["consensus"], 4),
+            "alarm_p": round(float(alarm_p), 4),
+            "alarms": {f"{100 * a:g}%": v for a, v in alarms.items()},
+            "alarm_far": min((a for a, v in alarms.items() if v), default=None),
         },
     }
 
@@ -224,9 +246,11 @@ def rule_verdict(cls: dict, ctx: dict, n_det: int, n_g: int | None = None, n_r: 
     """The deterministic triage baseline. A headline class is reported only for a singleton
     conformal set (ordinary / needs_spectrum); a set of two or more is `ambiguous`; the
     CV label on an extended host is `host_mismatch`; insufficient_data below MIN_DETECTIONS.
-    The 1% FAR energy alarm counts only for the full-curve model with ANOMALY_MIN_DETECTIONS."""
+    The 1% FAR alarm (consensus when shipped, else energy) counts only when it is calibrated
+    at the model's phase and the object has ANOMALY_MIN_DETECTIONS."""
     a = cls["anomaly"]
-    alarm = bool(a.get("calibrated", True)) and n_det >= ANOMALY_MIN_DETECTIONS and bool(a["above_1pct_far"])
+    at_1pct = (a.get("alarms") or {}).get("1%", a["above_1pct_far"])
+    alarm = bool(a.get("calibrated", True)) and n_det >= ANOMALY_MIN_DETECTIONS and bool(at_1pct)
     stellar = (ctx.get("parallax_over_error") or 0) > 3 or (ctx.get("pm_over_error") or 0) > 3
     nuclear = ctx.get("host_sep") is not None and ctx["host_sep"] < 0.5
     singleton = len(cls["prediction_set"]) == 1
@@ -281,7 +305,7 @@ def plot_lightcurve(events, cls: dict, resource_id: str, outdir: Path) -> list[s
             ax.errorbar(lc.t, 23.9 - 2.5 * lc.logflux, yerr=2.5 * lc.logflux_err, fmt="o", ms=3, color=c, label=b)
     ax.invert_yaxis(); ax.set_xlabel("days from first detection"); ax.set_ylabel("mag"); ax.legend(loc="upper right", fontsize=8)
     txt = "\n".join(f"{k} {v:.2f}" for k, v in sorted(cls["probabilities"].items(), key=lambda kv: -kv[1])[:3])
-    ax.text(0.02, 0.05, f"FLARE: {cls['predicted'] or 'no class (' + str(cls.get('predicted_if_forced')) + ')'}  set {{{'|'.join(cls['prediction_set'])}}}\n{txt}\nenergy pct {cls['anomaly']['energy_percentile']}",
+    ax.text(0.02, 0.05, f"FLARE: {cls['predicted'] or 'no class (' + str(cls.get('predicted_if_forced')) + ')'}  set {{{'|'.join(cls['prediction_set'])}}}\n{txt}\nanomaly p {cls['anomaly'].get('alarm_p', cls['anomaly']['novelty_p'])} ({cls['anomaly'].get('alarm_score', 'energy')})",
             transform=ax.transAxes, fontsize=8, va="bottom", family="monospace")
     ax.set_title(resource_id, fontsize=10)
     path = outdir / f"{resource_id}_flare.png"
@@ -307,6 +331,10 @@ def annotations_for(cls: dict, verdict: dict) -> dict:
         "flare_coverage": cls.get("coverage_of_predicted"),
         "flare_energy_pct": a["energy_percentile"],
         "flare_novelty_p": a["novelty_p"],
+        # the anomaly alarm: its p-value and the smallest false-alarm rate that flags the object
+        "flare_anomaly_p": a.get("alarm_p"),
+        "flare_alarm_far": a.get("alarm_far"),
+        "flare_consensus": a.get("consensus"),
         "flare_verdict": verdict.get("verdict"),
         "flare_priority": verdict.get("priority"),
     }
@@ -428,7 +456,10 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
     plots = plot_lightcurve(events, cls, resource_id, work) if _as_bool(params.get("plot"), True) else []
     a = cls["anomaly"]
     setstr = "{" + "|".join(cls["prediction_set"]) + "}"
-    anom = (f"anomaly energy percentile {a['energy_percentile']:.1f} ({a.get('calibration', 'full')} calibration)" if a.get("calibrated", True)
+    far = a.get("alarm_far")
+    flagged = f"flagged at {100 * far:g}% FAR" if far else "not flagged at 10% FAR"
+    anom = (f"anomaly {a.get('alarm_score', 'energy')} p={a.get('alarm_p', a['novelty_p']):.3f}, {flagged} "
+            f"({a.get('calibration', 'full')} calibration)" if a.get("calibrated", True)
             else f"anomaly score not calibrated at this phase (energy percentile {a['energy_percentile']:.1f} for the record)")
     head = f"FLARE ({cls['model']}, {len(events)} detections over {span:.1f} d)"
     if verdict["verdict"] == "ambiguous" and cls["predicted"] == "SN":
@@ -441,7 +472,7 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
         message = (f"FLARE: fast transient, class unresolved; the light curve looks CV-like "
                    f"(p={max(cls['probabilities'].values()):.2f}) but sits {ctx['host_sep']:.1f}\" from an extended source "
                    f"(PSF-Kron {ctx['host_ext']:.2f}) with no point source underneath, so no class is reported; "
-                   f"credibility {cls['credibility']:.2f}, anomaly energy percentile {a['energy_percentile']:.1f}; "
+                   f"credibility {cls['credibility']:.2f}, {anom}; "
                    f"triage host_mismatch (priority {verdict['priority']}): spectrum recommended")
     elif cls["predicted"] is None and verdict["verdict"] not in ("insufficient_data",):
         message = (f"{head}: 90% set {setstr} does not single out the most probable class "

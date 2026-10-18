@@ -33,6 +33,7 @@ and >=100 eligible per horizon. Confirmation ALL, ONLY for this missing-context
 unclassified population. Missing labels preclude a rare-class safeguard.
 Nominal68/95 residual-band coverage is descriptive, no calibration updates.
 """
+import os
 import argparse
 from datetime import datetime, timezone
 import hashlib
@@ -184,7 +185,7 @@ def evaluate(a):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('stage',choices=['freeze','evaluate'])
-    p.add_argument('--catalog',type=Path);p.add_argument('--data',type=Path,default=PKG.parent/'bts_dataset')
+    p.add_argument('--catalog',type=Path);p.add_argument('--data',type=Path,default=Path(os.environ.get('FLARE_PAPER_DATA', PKG / 'paper_data')))
     p.add_argument('--out',type=Path,required=True);a=p.parse_args()
     if a.stage=='freeze':freeze(a)
     else:evaluate(a)

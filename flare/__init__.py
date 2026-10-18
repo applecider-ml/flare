@@ -4,13 +4,13 @@ A physics-features + gradient-boosted-trees classifier for ZTF photometric
 transients with class-conditional conformal uncertainty. Well-calibrated,
 interpretable, CPU-light, and deployable as plain model files.
 
-Two schemes ship (selected by config, see flare.config):
+Schemes (selected by config, see flare.config):
 
-    bts6    the default: SN_Ia | SN_CC | SLSN | AGN | TDE | CV, predicted as a
-            five-way top level with a dedicated SLSN head, optionally consuming
-            host-galaxy photometry and a photo-z pseudo-absolute magnitude
-    broad5  the original AppleCiDEr taxonomy (SNI | SNII | CV | AGN | TDE),
-            one flat model; kept for the tutorial notebooks
+    bts6    the shipped model: SN_Ia | SN_CC | SLSN | AGN | TDE | CV, predicted as a
+            five-way top level with a dedicated SLSN head, consuming the catalogue
+            context when available; day-5/10/20 versions via horizon_days
+    broad5  the original five-class taxonomy (SNI | SNII | CV | AGN | TDE), one flat
+            model; its weights are not shipped, train them with scripts/train.py
 
 Quick start:
 

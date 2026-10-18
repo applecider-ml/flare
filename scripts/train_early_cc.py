@@ -16,6 +16,7 @@ not read):
 Run: python scripts/train_early_cc.py --out models/bts6/early_cc --threads 16
 """
 import argparse, hashlib, json, sys
+import os
 from pathlib import Path
 
 import lightgbm as lgb
@@ -34,7 +35,7 @@ from flare.config import HOST_COLS, GW_COLS, POS_COLS  # noqa: E402
 from flare.data import load_events  # noqa: E402
 from flare.hierarchical import HierarchicalFlare  # noqa: E402
 
-ROOT = PKG.parent / "bts_dataset"
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
 
 
 def hierarchy_nocal(X, y, tr, es, args):

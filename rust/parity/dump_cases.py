@@ -7,18 +7,21 @@
                   Python boosters' raw scores, for the LightGBM evaluator test
 """
 import glob, json, sys, numpy as np, pandas as pd
-sys.path.insert(0, '/projects/bcrv/asasli/later/flare')
+import os
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
+sys.path.insert(0, REPO)
 from flare import data as D, features as FE
 from flare.hierarchical import HierarchicalFlare
-OUT = '/projects/bcrv/asasli/later/flare/rust/parity/'
+OUT = os.path.join(REPO, 'rust', 'parity') + '/'
 ZP = 23.9
 rng = np.random.default_rng(0)
-files = sorted(glob.glob('/projects/bcrv/asasli/later/bts_dataset/data/events/*.npz'))
+# light curves: python -c 'from flare import benchmark; benchmark.prepare()'
+files = sorted(glob.glob(os.path.join(REPO, 'benchmark', 'events', '*.npz')))
 pick = [files[i] for i in rng.choice(len(files), 300, replace=False)]
 clf = HierarchicalFlare.from_pretrained(); FN = list(clf.feature_names)
-X = pd.read_parquet('/projects/bcrv/asasli/later/flare/benchmark/features_all.parquet')
+X = pd.read_parquet(os.path.join(REPO, 'benchmark', 'features_all.parquet'))
 for f in ['hosts.csv', 'hosts_photoz.csv', 'context_gaia_wise.csv', 'ps1_position.csv']:
-    d = pd.read_csv('/projects/bcrv/asasli/later/flare/benchmark/' + f).drop_duplicates('obj_id')
+    d = pd.read_csv(os.path.join(REPO, 'benchmark', f)).drop_duplicates('obj_id')
     X = X.merge(d[['obj_id'] + [c for c in d.columns if c in FN and c not in X.columns]], on='obj_id', how='left')
 for c in FN:
     if c not in X.columns: X[c] = np.nan
