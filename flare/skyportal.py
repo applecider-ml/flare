@@ -8,7 +8,7 @@ skyportal/osg-skyportal-plugin only parses the payload and calls this, so the
 logic is versioned here with the models it uses.
 
 Parameters (all optional): horizon_days (100), context ("live" | "none"),
-base_rate (0.0326), agent (False; LLM triage through agents-flare, needs
+base_rate (0.0326), agent (False; LLM triage through applecider-agents, needs
 ANTHROPIC_API_KEY), plot (True), redshift, ra, dec.
 """
 from __future__ import annotations
@@ -272,17 +272,17 @@ def rule_verdict(cls: dict, ctx: dict, n_det: int, n_g: int | None = None, n_r: 
 
 
 def agent_verdict(resource_id: str, events, ctx: dict, X, peak, horizon_days: float) -> dict | None:
-    """LLM triage through agents-flare, seeded with this payload so nothing is re-fetched.
-    Returns None when the package or the key is absent (the caller keeps the rule verdict)."""
+    """LLM triage through applecider-agents (the FLARE agent), seeded with this payload so nothing
+    is re-fetched. Returns None when the package or the key is absent (the caller keeps the rule
+    verdict). X and peak are recomputed by the agent's tools from the same events and context."""
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return None
     try:
-        from agents_flare import tools as T
-        from agents_flare.agent import triage
+        from applecider_agents.core import data as agent_data, loop
     except ImportError:
         return None
-    T._CACHE[(resource_id, float(horizon_days))] = (events, {**ctx, "_source": "skyportal"}, X, peak)
-    rep = triage(resource_id, horizon_days=horizon_days)
+    agent_data.seed(resource_id, events, {**ctx, "_source": "skyportal"})
+    rep = loop.triage("flare", resource_id, horizon_days=horizon_days)
     out = rep.model_dump()
     out["source"] = "agent"
     return out
