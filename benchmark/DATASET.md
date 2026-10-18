@@ -46,7 +46,7 @@ the first detection, time since the previous one, band, log-flux and its error,
 band one-hots and the paired colours) and its column names.
 
 The light curves can also be rebuilt from public photometry with
-`python paper/build_bts_dataset.py`: set `BOOM_URL` (and `BOOM_TOKEN`, or
+`python scripts/build_bts_dataset.py`: set `BOOM_URL` (and `BOOM_TOKEN`, or
 `BOOM_USERNAME` / `BOOM_PASSWORD`) to query through the BOOM broker; without
 credentials the public ALeRCE API is used.
 
@@ -56,4 +56,4 @@ Labels: ZTF Bright Transient Survey sample explorer (spectroscopic types).
 Photometry: ZTF alerts via BOOM/ALeRCE. Host photometry: Pan-STARRS DR2 via the
 MAST catalog API. Photometric redshifts: Legacy Surveys DR10/DR9 via the Astro
 Data Lab TAP service. The quality cuts, the taxonomy mapping and the novelty
-tiers are implemented in `paper/build_bts_dataset.py` and `paper/make_splits.py`.
+tiers are implemented in `scripts/build_bts_dataset.py` and `scripts/make_splits.py`.

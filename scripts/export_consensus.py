@@ -25,7 +25,7 @@ PKG = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG / "scripts"))
 from evaluate_unified import context_table, SIX  # noqa: E402
 from luna import LUNAPipeline, __version__ as luna_version  # noqa: E402
-ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python scripts/setup_data.py
 FARS = (0.01, 0.05, 0.10)
 
 

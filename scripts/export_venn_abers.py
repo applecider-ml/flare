@@ -20,7 +20,7 @@ from evaluate_unified import context_table, SIX  # noqa: E402
 from train_early_cc import hierarchy_nocal  # noqa: E402
 from flare.context import lumdist_mpc  # noqa: E402
 from flare.venn_abers import build_table  # noqa: E402
-ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python scripts/setup_data.py
 
 
 def pool_X(h, pool, n):

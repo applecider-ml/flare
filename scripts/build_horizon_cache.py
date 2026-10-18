@@ -21,7 +21,7 @@ from flare.analysis import feature_frame, observed_events  # noqa: E402
 from flare.data import load_events  # noqa: E402
 from evaluate_unified import context_table  # noqa: E402
 
-ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python paper/setup_data.py
+ROOT = Path(os.environ.get("FLARE_PAPER_DATA", PKG / "paper_data"))  # python scripts/setup_data.py
 _CTX = None
 
 

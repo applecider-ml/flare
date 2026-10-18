@@ -13,8 +13,7 @@ The one exception is `consensus.pkl.gz`, a pickled LUNA pipeline that is read on
 
 Load: `flare.load_classifier()` (full curve) or `flare.load_classifier(horizon_days=5)`.
 The full-curve and early models are fitted on the benchmark's train and validation splits
-(`benchmark/`), so the test split gives an honest evaluation; the paper's numbers come from
-five-fold cross-validation (`paper/`). Training scripts: `scripts/train_bts6.py`,
+(`benchmark/`), so the test split gives an honest evaluation. Training scripts: `scripts/train_bts6.py`,
 `scripts/train_early_cc.py`, `scripts/export_venn_abers.py`, `scripts/export_consensus.py`.
 
 The five-class weights of the original release (`broad5`) are no longer shipped; train them on

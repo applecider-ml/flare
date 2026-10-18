@@ -45,7 +45,7 @@ BR = dict(objective="binary", metric="auc",
           learning_rate=0.05, num_leaves=24, min_child_samples=25,
           feature_fraction=0.6, bagging_fraction=0.85, lambda_l2=1.0)
 BETA = 0.8
-# five-fold out-of-fold coverage at alpha=0.10 (scripts/kfold_conformal.py);
+# five-fold out-of-fold coverage at alpha=0.10 (cross-conformal study of the FLARE paper);
 # shipped so a deployed prediction set can be shown next to its measured error
 EMPIRICAL_COVERAGE = {"SN_Ia": 0.903, "SN_CC": 0.919, "SLSN": 0.949,
                       "AGN": 0.948, "TDE": 0.926, "CV": 0.934}
