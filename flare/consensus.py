@@ -86,4 +86,9 @@ def load(directory: str | Path) -> Consensus | None:
     manifest = json.loads((directory / "manifest.json").read_text())
     if manifest.get(FILENAME) != hashlib.sha256(raw).hexdigest():
         raise ValueError(f"{path}: sha256 does not match {directory / 'manifest.json'}")
-    return Consensus(pickle.loads(gzip.decompress(raw)))
+    # The pickles were written with scikit-learn 1.8; later versions warn on every estimator when
+    # unpickling, although the consensus and its p-values are identical (checked under 1.8 and 1.9).
+    import warnings
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Trying to unpickle estimator")
+        return Consensus(pickle.loads(gzip.decompress(raw)))
