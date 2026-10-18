@@ -23,6 +23,18 @@ def test_every_model_ships_a_consensus():
         assert len(c.pipeline.active_methods) == 14
 
 
+def test_alarm_is_calibrated_per_detection_count():
+    """The day-5/10/20 models carry Mondrian p-values by number of detections, each bin with
+    enough calibration objects for a 1% alarm; the full-curve model keeps one reference."""
+    import numpy as np
+    assert C.load(MODELS).edges is None
+    for d in DIRS[1:]:
+        c = C.load(d)
+        assert c.ndet_feature == "n_obs_total" and np.isinf(c.edges[-1]), d
+        assert len(c.cal_scores) == len(c.edges) and min(map(len, c.cal_scores)) >= 99, d
+        assert all(np.all(np.diff(s) >= 0) for s in c.cal_scores)
+
+
 def test_manifest_mismatch_is_refused(tmp_path):
     for f in ("consensus.pkl.gz", "manifest.json"):
         shutil.copy(MODELS / "early" / "h5" / f, tmp_path / f)
