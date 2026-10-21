@@ -148,12 +148,20 @@ def classify(X, base_rate: float, horizon=None) -> dict:
     booster = getattr(clf, "ad_space", None) or getattr(full, "ad_space", None)
     if getattr(clf, "consensus", None) is not None and booster is not None:
         cons = clf.consensus.score(X.reindex(columns=full.feature_names), booster)[0]
+    review = None
     if cons is not None:
         alarm_p, alarms = cons["p_value"], cons["alarms"]
+        if horizon is None and cons.get("scores"):
+            # review priority from operator confirmations (flare.review); the alarm stays blind
+            from . import review as RV
+            rc = RV.load(Path(BTS6.model_paths["top"]).parent)
+            review = rc.score(cons["scores"]) if rc is not None else None
     else:       # energy: the conformal novelty p-value against its known population
         alarm_p = float(an.get("novelty_p", float("nan")))
         alarms = {a: bool(alarm_p <= a) for a in (0.01, 0.05, 0.10)}
-    label = BTS6.classes[int(P.argmax())]
+    # the classifier's own rule (hierarchy with the tuned SLSN branch threshold), the same one every
+    # evaluation uses; the argmax of the six probabilities can differ from it inside SN_CC+
+    label = str(clf.predict(Xc)[0])
     order = np.argsort(pv)[::-1]
     n_cal_label = len(clf.cal_scores[label]) if getattr(clf, "cal_scores", None) else None
     va = None
@@ -201,9 +209,13 @@ def classify(X, base_rate: float, horizon=None) -> dict:
             # alarm_far the smallest false-alarm rate (1%, 5%, 10%) at which the object is flagged
             "alarm_score": "consensus" if cons is not None else "energy",
             "consensus": None if cons is None else round(cons["consensus"], 4),
+            # True when the p-value compares the object with known objects of a similar number of detections
+            "ndet_calibrated": bool(cons is not None and cons.get("ndet_group") is not None),
             "alarm_p": round(float(alarm_p), 4),
             "alarms": {f"{100 * a:g}%": v for a, v in alarms.items()},
             "alarm_far": min((a for a, v in alarms.items() if v), default=None),
+            # supervised review priority (full-curve model, once confirmations from several families exist)
+            "review": review,
         },
     }
 
@@ -239,7 +251,12 @@ def host_mismatch(cls: dict, ctx: dict) -> bool:
 
 
 MIN_DETECTIONS = 3            # below this nothing is said (insufficient_data)
-ANOMALY_MIN_DETECTIONS = 8    # the full-curve energy threshold is trusted only from here
+LIFETIME_ALARM_LEVEL = "1 per week"   # the level of flare.lifetime that sends an object to anomaly review
+ANOMALY_MIN_DETECTIONS = 8    # alarm gate when the p-value has one reference for every detection count
+# The day-5/10/20 alarms compare an alert only with known objects of a similar number of detections,
+# so their gate is MIN_DETECTIONS: on Fritz sources outside the benchmark with 3-7 detections the 1%
+# alarm fires on 1.5% of known-class objects, and the 8-detection gate dropped 6 of the 7 GRB/FBOT
+# and 7 of the 18 novae it flagged (bts_dataset/results/holdout_fritz_20261018/report_v2.txt).
 
 
 def rule_verdict(cls: dict, ctx: dict, n_det: int, n_g: int | None = None, n_r: int | None = None) -> dict:
@@ -247,10 +264,17 @@ def rule_verdict(cls: dict, ctx: dict, n_det: int, n_g: int | None = None, n_r: 
     conformal set (ordinary / needs_spectrum); a set of two or more is `ambiguous`; the
     CV label on an extended host is `host_mismatch`; insufficient_data below MIN_DETECTIONS.
     The 1% FAR alarm (consensus when shipped, else energy) counts only when it is calibrated
-    at the model's phase and the object has ANOMALY_MIN_DETECTIONS."""
+    at the model's phase and the object has ANOMALY_MIN_DETECTIONS, or MIN_DETECTIONS when the
+    alarm is calibrated per number of detections (the day-5/10/20 consensus)."""
     a = cls["anomaly"]
     at_1pct = (a.get("alarms") or {}).get("1%", a["above_1pct_far"])
-    alarm = bool(a.get("calibrated", True)) and n_det >= ANOMALY_MIN_DETECTIONS and bool(at_1pct)
+    gate = MIN_DETECTIONS if a.get("ndet_calibrated") else ANOMALY_MIN_DETECTIONS
+    alarm = bool(a.get("calibrated", True)) and n_det >= gate and bool(at_1pct)
+    life = a.get("lifetime")
+    if life is not None:
+        # the service re-analyses a source at every detection: with the lifetime reference shipped, the
+        # alarm is the false-alarm rate per unit time (flare.lifetime), at the level LIFETIME_ALARM_LEVEL
+        alarm = bool(life["levels"].get(LIFETIME_ALARM_LEVEL)) and n_det >= MIN_DETECTIONS
     stellar = (ctx.get("parallax_over_error") or 0) > 3 or (ctx.get("pm_over_error") or 0) > 3
     nuclear = ctx.get("host_sep") is not None and ctx["host_sep"] < 0.5
     singleton = len(cls["prediction_set"]) == 1
@@ -334,6 +358,12 @@ def annotations_for(cls: dict, verdict: dict) -> dict:
         # the anomaly alarm: its p-value and the smallest false-alarm rate that flags the object
         "flare_anomaly_p": a.get("alarm_p"),
         "flare_alarm_far": a.get("alarm_far"),
+        # false-alarm rate per unit time over the analyses of this source (flare.lifetime)
+        "flare_lifetime_p": (a.get("lifetime") or {}).get("lifetime_p"),
+        "flare_false_alarms_per_day": (a.get("lifetime") or {}).get("false_alarms_per_day"),
+        "flare_far_level": (a.get("lifetime") or {}).get("level"),
+        # review priority from operator confirmations (flare.review): smaller p = review first
+        "flare_review_p": (a.get("review") or {}).get("review_p"),
         "flare_consensus": a.get("consensus"),
         "flare_verdict": verdict.get("verdict"),
         "flare_priority": verdict.get("priority"),
@@ -430,6 +460,29 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
     span = float(events[:, 0].max() - events[:, 0].min()) if len(events) else 0.0
     h_model = phase_horizon(span) if _as_bool(params.get("phase_models"), True) else None
     cls = classify(X, float(params["base_rate"]), horizon=h_model)
+    # false-alarm rate per unit time: the prefixes of the light curve are replayed with the schedule of the
+    # shipped reference (flare.lifetime), so the service needs no memory of its earlier analyses
+    from . import lifetime as LT
+    from .config import BTS6
+    life_ref = LT.load(Path(BTS6.model_paths["top"]).parent) if _as_bool(params.get("lifetime"), True) else None
+    if life_ref is not None:
+        p_by_k = {}
+        for k in LT.steps(len(rows)):
+            if k == len(rows):
+                p_by_k[k] = float(cls["anomaly"]["alarm_p"]); continue
+            ev_k = to_events(list(rows[:k]), horizon_days=horizon)
+            if ev_k is None or len(ev_k) < MIN_DETECTIONS:
+                continue
+            try:
+                X_k, _, _ = feature_frame(ev_k, context, z)
+                span_k = float(ev_k[:, 0].max() - ev_k[:, 0].min())
+                h_k = phase_horizon(span_k) if _as_bool(params.get("phase_models"), True) else None
+                p_by_k[k] = float(classify(X_k, float(params["base_rate"]), horizon=h_k)["anomaly"]["alarm_p"])
+            except Exception:  # noqa: BLE001 - a prefix that cannot be featurised is skipped, as the service would
+                continue
+        if p_by_k:
+            cls["anomaly"]["lifetime"] = {**life_ref.significance(p_by_k), "stream_rate_per_day": life_ref.rate_per_day,
+                                          "alarm_level": LIFETIME_ALARM_LEVEL}
     bands = events[:, 2].astype(int) if len(events) else []
     n_g, n_r = int((bands == 0).sum()), int((bands == 1).sum())
     verdict = rule_verdict(cls, ctx, int(len(events)), n_g, n_r)
@@ -461,6 +514,11 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
     anom = (f"anomaly {a.get('alarm_score', 'energy')} p={a.get('alarm_p', a['novelty_p']):.3f}, {flagged} "
             f"({a.get('calibration', 'full')} calibration)" if a.get("calibrated", True)
             else f"anomaly score not calibrated at this phase (energy percentile {a['energy_percentile']:.1f} for the record)")
+    life = a.get("lifetime")
+    if life is not None:
+        days = life.get("one_false_alarm_per_days")
+        anom += (f"; over {life['n_analyses']} analyses one false alarm per {days:g} days on the stream"
+                 f" ({life['level'] or 'below 1 per week'})" if days else f"; over {life['n_analyses']} analyses no false-alarm level reached")
     head = f"FLARE ({cls['model']}, {len(events)} detections over {span:.1f} d)"
     if verdict["verdict"] == "ambiguous" and cls["predicted"] == "SN":
         message = (f"{head}: supernova (p={cls['probabilities_coarse']['SN']:.2f}), type unresolved, 90% set {setstr}, "

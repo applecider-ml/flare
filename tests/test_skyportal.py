@@ -95,6 +95,17 @@ def test_host_mismatch_withholds_the_cv_label():
     assert S.rule_verdict(cv, {}, 10, 4, 4)["verdict"] == "ordinary"
 
 
+def test_detection_gate_follows_the_calibration():
+    """A consensus alarm calibrated per number of detections counts from MIN_DETECTIONS; one with a
+    single reference still needs ANOMALY_MIN_DETECTIONS."""
+    base = _cls()["anomaly"]
+    hot = _cls(anomaly={**base, "calibrated": True, "alarms": {"1%": True, "5%": True, "10%": True}, "ndet_calibrated": True})
+    assert S.rule_verdict(hot, {}, 4)["verdict"] == "anomaly_review"
+    hot = _cls(anomaly={**base, "calibrated": True, "alarms": {"1%": True, "5%": True, "10%": True}, "ndet_calibrated": False})
+    assert S.rule_verdict(hot, {}, 4)["verdict"] == "ordinary"
+    assert S.rule_verdict(hot, {}, 8)["verdict"] == "anomaly_review"
+
+
 def test_phase_routing_and_uncalibrated_alarm():
     assert [S.phase_horizon(d) for d in (0.0, 3.0, 7.4, 7.5, 14.9, 15.0, 34.9, 35.0, 200.0)] == [5, 5, 5, 10, 10, 20, 20, None, None]
     # the full-curve energy alarm is ignored under an early model and below 8 detections

@@ -65,8 +65,10 @@ class Consensus:
                 cal = self.cal_scores[k]
                 p[i] = (1.0 + len(cal) - np.searchsorted(cal, s[i], side="left")) / (len(cal) + 1.0)
                 group[i] = k
+        scores = out.get("scores") or {}
         return [dict(consensus=float(s[i]), p_value=float(p[i]),
-                     alarms={a: bool(p[i] <= a) for a in self.fars}, ndet_group=group[i])
+                     alarms={a: bool(p[i] <= a) for a in self.fars}, ndet_group=group[i],
+                     scores={m: float(v[i]) for m, v in scores.items()})
                 for i in range(len(s))]
 
 

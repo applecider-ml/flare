@@ -73,8 +73,12 @@ def main():
     pool = pd.concat([train, val], ignore_index=True)
     n = len(pool); y = np.array([SIX.index(c) for c in pool.cls])
     val_rows = np.arange(len(train), n)
+    src = pool.get("source", pd.Series("bts", index=pool.index)).fillna("bts")
+    data_note = ", ".join(f"{int((src == s).sum()):,} {'BTS benchmark' if s == 'bts' else 'spectroscopically confirmed Fritz'}"
+                          for s in sorted(src.unique()))
     folds = list(StratifiedKFold(5, shuffle=True, random_state=42).split(np.zeros(n), y))
     novel = pd.read_csv(ROOT / "data/splits/anomaly.csv")
+    novel = novel[novel.get("source", pd.Series("bts", index=novel.index)).fillna("bts") == "bts"]  # other sources are never read
     ctx = context_table(ROOT, novel.obj_id.values)
     ad = lgb.Booster(model_file=str(PKG / "models/bts6/ad_space.txt"))
     energy = lambda X: -logsumexp(ad.predict(X.reindex(columns=ad.feature_name()), raw_score=True), axis=1)
@@ -119,7 +123,7 @@ def main():
             n_cal_per_class={c: len(v) for c, v in scores.items()},
             p_value_floor=rep["p_value_floor"],
             lofo_coverage={c: v["coverage"] for c, v in per_class.items()}, lofo_marginal_coverage=rep["lofo_marginal_coverage"],
-            note="scores 1-P(true class) are out-of-fold over five stratified folds of train+val (8,922 objects); "
+            note=f"scores 1-P(true class) are out-of-fold over five stratified folds of train+val ({n:,} objects); "
                  "the exported weights are the same recipe fitted on all of train+val; coverage above is "
                  "leave-one-fold-out at alpha 0.1"), indent=2, allow_nan=False))
         # anomaly calibration at this horizon
@@ -146,7 +150,7 @@ def main():
         rep["anomaly"] = {k: anom[k] for k in ("auroc", "tpr_at_1pct_far", "n_anomalous")}
         print("anomaly", rep["anomaly"], flush=True)
         card = dict(horizon_days=h, branch_threshold=final.branch_threshold, feature_names=list(X.columns),
-                    training="2026-10-05: fitted on train+val (85/15 fit/early stop); conformal and anomaly calibration are "
+                    training=f"fitted on train+val ({n:,} objects; {data_note}) (85/15 fit/early stop); conformal and anomaly calibration are "
                              "cross-conformal / validation-split based, see conformal.json and anomaly_calibration.json; "
                              "horizon caches rebuilt with prefix colours (scripts/build_horizon_cache.py); test labels not read",
                     oof_development_numbers=rep, script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())

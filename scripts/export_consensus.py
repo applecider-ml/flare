@@ -82,7 +82,7 @@ def main():
         booster = lgb.Booster(model_file=str(own if own.exists() else a.models / "ad_space.txt"))
         cols = booster.feature_name()
         known = np.sort(json.loads((out / "anomaly_calibration.json").read_text())["known_energies"])
-        cal_split, ref_split = ("test", "test") if h is None else ("val", "test")
+        cal_split, ref_split = "val", "val"     # v3: the test split stays untouched for evaluation
         Xtr = design(split["train"].obj_id.values, h, all_ids)[cols]
         Xkn = design(split[cal_split].obj_id.values, h, all_ids)[cols]
         Xref = design(split[ref_split].obj_id.values, h, all_ids)[cols]
@@ -97,14 +97,14 @@ def main():
         emb = lambda X: np.clip((X.fillna(med) - med) / iqr, -10, 10).fillna(0).to_numpy(np.float32)
         ytr = np.array([SIX.index(c) for c in split["train"].cls])
         pipe = LUNAPipeline(target_far=FARS).fit(dict(embeddings=emb(Xtr), logits=logits(Xtr), labels=ytr))
-        if h is None:       # halves of the test split, one reference
-            pipe.fit_blind(dict(embeddings=emb(Xkn), logits=logits(Xkn)), seed=a.seed)
-            mondrian, edges = None, None
-        else:               # ranks on the test split, Mondrian p-values on the validation split
-            cal = dict(embeddings=emb(Xkn), logits=logits(Xkn))
-            pipe.fit_blind(dict(embeddings=emb(Xref), logits=logits(Xref)), cal)
+        # v3: ranks frozen on one half of the validation split, Mondrian p-values on the other half,
+        # for every model
+        ref, cal = LUNAPipeline._split(dict(embeddings=emb(Xkn), logits=logits(Xkn),
+                                            n_obs=Xkn["n_obs_total"].to_numpy(float)), 0.5, a.seed)
+        n_obs = cal.pop("n_obs"); ref.pop("n_obs")
+        if True:
+            pipe.fit_blind(ref, cal)
             cal_score = pipe._combiner.predict(pipe._scores_to_matrix(pipe.score(cal)))
-            n_obs = Xkn["n_obs_total"].to_numpy(float)
             edges = ndet_bins(n_obs)
             b = np.searchsorted(edges, n_obs, side="left")
             mondrian = dict(feature="n_obs_total", edges=edges,

@@ -118,7 +118,7 @@ class AnalysisTests(unittest.TestCase):
         html = render_analysis({'<script>bad</script>': r})
         self.assertIn('&lt;script&gt;', html)
         self.assertNotIn('<script>bad</script>', html)
-        self.assertIn('early-time coverage unvalidated', html)
+        self.assertIn('alarm calibration at this observation cutoff unvalidated', html)
 
     def test_matching_early_classifier_is_selected(self):
         result = self.engine.analyze(events(), 10, include_reconstruction=False)

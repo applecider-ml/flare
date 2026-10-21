@@ -29,7 +29,9 @@ def main():
     train = pd.read_csv(ROOT / "data/splits/train.csv"); val = pd.read_csv(ROOT / "data/splits/val.csv")
     pool = pd.concat([train, val], ignore_index=True); n = len(pool)
     y = np.array([SIX.index(c) for c in pool.cls]); tr_all = np.arange(len(train)); va = np.arange(len(train), n)
-    novel = pd.read_csv(ROOT / "data/splits/anomaly.csv"); ctx = context_table(ROOT, novel.obj_id.values)
+    novel = pd.read_csv(ROOT / "data/splits/anomaly.csv")
+    novel = novel[novel.get("source", pd.Series("bts", index=novel.index)).fillna("bts") == "bts"]  # other sources are never read
+    ctx = context_table(ROOT, novel.obj_id.values)
     full = lgb.Booster(model_file=str(PKG / "models/bts6/ad_space.txt"))
     lc_cols = [c for c in full.feature_name()]            # the shipped AD space: 160 lc + host + gaia/wise
     for h in (5, 10, 20):

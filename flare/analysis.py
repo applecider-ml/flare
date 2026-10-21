@@ -261,8 +261,13 @@ class FlareAnalysis:
             conf['empirical_coverage'] = None
             conf['nominal_error'] = conf.get('guaranteed_error')
             conf['guaranteed_error'] = None
-        anomaly = self.classifier.anomaly_probability(X.reindex(columns=self.classifier.feature_names), base_rate=base_rate)[0]
-        anomaly['calibration_scope'] = "full-curve BTS6; early-time coverage unvalidated" if horizon_days != 100 else "full-curve BTS6"
+        # the anomaly block of the SkyPortal service for the same model: phase-matched blind consensus
+        # with its alarms (energy fields kept as diagnostics), so offline and online users get one signal
+        from .skyportal import classify as service_classify, DEFAULTS
+        anomaly = service_classify(X, DEFAULTS["base_rate"] if base_rate is None else base_rate,
+                                   horizon=None if model_horizon == 100 else int(model_horizon))["anomaly"]
+        anomaly['calibration_scope'] = (f"BTS6 day-{model_horizon:g} model" if matched
+                                        else f"BTS6 day-{model_horizon:g} model; alarm calibration at this observation cutoff unvalidated")
         result = dict(observation_cutoff_days=horizon_days, n_detections=len(arr),
                       classification=conf, anomaly=anomaly)
         result['reconstruction'] = reconstruct(arr) if include_reconstruction else dict(status="disabled")

@@ -24,11 +24,10 @@ def test_every_model_ships_a_consensus():
 
 
 def test_alarm_is_calibrated_per_detection_count():
-    """The day-5/10/20 models carry Mondrian p-values by number of detections, each bin with
-    enough calibration objects for a 1% alarm; the full-curve model keeps one reference."""
+    """Every model carries Mondrian p-values by number of detections (v3 recipe: ranks and p-values on
+    the two halves of the validation split), each bin with enough calibration objects for a 1% alarm."""
     import numpy as np
-    assert C.load(MODELS).edges is None
-    for d in DIRS[1:]:
+    for d in DIRS:
         c = C.load(d)
         assert c.ndet_feature == "n_obs_total" and np.isinf(c.edges[-1]), d
         assert len(c.cal_scores) == len(c.edges) and min(map(len, c.cal_scores)) >= 99, d

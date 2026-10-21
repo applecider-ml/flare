@@ -8982,42 +8982,42 @@
   "empirical_coverage_note": "leave-one-fold-out coverage at alpha 0.10 over train+val (each fold's sets calibrated on the other four folds' out-of-fold scores); the paper's five-fold numbers over the full sample are in the model card",
   "note": "scores 1-P(true class) are out-of-fold over five stratified folds of train+val (8,922 objects); the exported weights are the same recipe fitted on all of train+val (85/15 fit / early stop)",
   "deployed_check": {
-    "split": "test (1575 objects, untouched by fit and calibration)",
-    "marginal": 0.8971,
-    "singleton_rate": 0.9111,
-    "singleton_correct": 0.9394,
-    "empty_rate": 0.0273,
-    "mean_set_size": 1.036,
+    "split": "test (1882 objects, untouched by fit and calibration)",
+    "marginal": 0.8836,
+    "singleton_rate": 0.881,
+    "singleton_correct": 0.93,
+    "empty_rate": 0.0287,
+    "mean_set_size": 1.063,
     "per_class": {
       "SN_Ia": {
-        "n": 1074,
-        "coverage": 0.894,
-        "err": 0.009
+        "n": 1231,
+        "coverage": 0.871,
+        "err": 0.01
       },
       "SN_CC": {
-        "n": 384,
-        "coverage": 0.911,
-        "err": 0.014
+        "n": 488,
+        "coverage": 0.914,
+        "err": 0.013
       },
       "SLSN": {
-        "n": 24,
-        "coverage": 0.958,
-        "err": 0.041
+        "n": 43,
+        "coverage": 0.977,
+        "err": 0.023
       },
       "AGN": {
-        "n": 38,
-        "coverage": 0.868,
-        "err": 0.055
+        "n": 49,
+        "coverage": 0.837,
+        "err": 0.053
       },
       "TDE": {
-        "n": 10,
-        "coverage": 0.9,
-        "err": 0.095
+        "n": 14,
+        "coverage": 0.714,
+        "err": 0.121
       },
       "CV": {
-        "n": 45,
-        "coverage": 0.844,
-        "err": 0.054
+        "n": 57,
+        "coverage": 0.912,
+        "err": 0.037
       }
     }
   }

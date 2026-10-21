@@ -20,12 +20,12 @@ def check(clf, X, y):
     per = {c: dict(n=int((y == i).sum()), coverage=round(float(cov[y == i].mean()), 3),
                    err=round(float((cov[y == i].mean() * (1 - cov[y == i].mean()) / max((y == i).sum(), 1)) ** .5), 3))
            for i, c in enumerate(SIX)}
-    return dict(split="test (1575 objects, untouched by fit and calibration)", marginal=round(float(cov.mean()), 4),
+    return dict(split=f"test ({len(y)} objects, untouched by fit and calibration)", marginal=round(float(cov.mean()), 4),
                 singleton_rate=round(float((size == 1).mean()), 4), singleton_correct=round(float(((size == 1) & (np.array([SIX.index(p) for p in pred]) == y)).sum() / max((size == 1).sum(), 1)), 4),
                 empty_rate=round(float((size == 0).mean()), 4), mean_set_size=round(float(size.mean()), 3), per_class=per)
 
 def main():
-    test = pd.read_csv(ROOT / "data/splits/test.csv"); y = np.array([SIX.index(c) for c in test.cls]); n0 = 7347 + 1575
+    test = pd.read_csv(ROOT / "data/splits/test.csv"); y = np.array([SIX.index(c) for c in test.cls]); n0 = len(pd.read_csv(ROOT / "data/splits/train.csv")) + len(pd.read_csv(ROOT / "data/splits/val.csv"))
     ctx = context_table(ROOT, test.obj_id.values)
     out = {}
     X5 = pd.read_parquet(ROOT / "results/reconstruction/cache/X_pool_h5.parquet")
