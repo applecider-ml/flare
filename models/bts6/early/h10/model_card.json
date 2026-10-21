@@ -1,6 +1,6 @@
 {
   "horizon_days": 10,
-  "branch_threshold": 0.39999999999999997,
+  "branch_threshold": 0.25,
   "feature_names": [
     "n_obs_total",
     "n_bands",
@@ -193,68 +193,69 @@
     "pos_star",
     "pos_ndet"
   ],
-  "training": "2026-10-05: fitted on train+val (85/15 fit/early stop); conformal and anomaly calibration are cross-conformal / validation-split based, see conformal.json and anomaly_calibration.json; horizon caches rebuilt with prefix colours (scripts/build_horizon_cache.py); test labels not read",
+  "training": "fitted on train+val (11,113 objects; 8,922 BTS benchmark, 2,191 spectroscopically confirmed Fritz) (85/15 fit/early stop); conformal and anomaly calibration are cross-conformal / validation-split based, see conformal.json and anomaly_calibration.json; horizon caches rebuilt with prefix colours (scripts/build_horizon_cache.py); test labels not read",
   "oof_development_numbers": {
     "horizon_days": 10,
-    "n_pool": 8922,
-    "oof_accuracy": 0.8179,
-    "oof_macro_f1": 0.6658,
-    "lofo_marginal_coverage": 0.9005,
-    "singleton_rate": 0.4829,
-    "singleton_correct": 0.9162,
+    "n_pool": 11113,
+    "oof_accuracy": 0.8064,
+    "oof_macro_f1": 0.7119,
+    "lofo_marginal_coverage": 0.9007,
+    "singleton_rate": 0.5431,
+    "singleton_correct": 0.8959,
     "empty_rate": 0.0,
-    "mean_set_size": 1.686,
+    "mean_set_size": 1.582,
     "per_class": {
       "SN_Ia": {
-        "n": 6085,
+        "n": 7179,
         "coverage": 0.9,
-        "recall": 0.892,
-        "singleton": 0.539
+        "recall": 0.871,
+        "singleton": 0.558
       },
       "SN_CC": {
-        "n": 2175,
-        "coverage": 0.899,
-        "recall": 0.648,
-        "singleton": 0.292
+        "n": 2881,
+        "coverage": 0.901,
+        "recall": 0.682,
+        "singleton": 0.48
       },
       "SLSN": {
-        "n": 132,
-        "coverage": 0.909,
-        "recall": 0.136,
-        "singleton": 0.068
+        "n": 256,
+        "coverage": 0.914,
+        "recall": 0.363,
+        "singleton": 0.223
       },
       "AGN": {
-        "n": 213,
-        "coverage": 0.906,
-        "recall": 0.883,
-        "singleton": 0.77
+        "n": 333,
+        "coverage": 0.898,
+        "recall": 0.877,
+        "singleton": 0.823
       },
       "TDE": {
-        "n": 58,
-        "coverage": 0.914,
-        "recall": 0.466,
-        "singleton": 0.362
+        "n": 121,
+        "coverage": 0.909,
+        "recall": 0.488,
+        "singleton": 0.24
       },
       "CV": {
-        "n": 259,
-        "coverage": 0.9,
-        "recall": 0.873,
-        "singleton": 0.776
+        "n": 343,
+        "coverage": 0.907,
+        "recall": 0.869,
+        "singleton": 0.837
       }
     },
     "p_value_floor": {
-      "SN_Ia": 0.0002,
-      "SN_CC": 0.0005,
-      "SLSN": 0.0075,
-      "AGN": 0.0047,
-      "TDE": 0.0169,
-      "CV": 0.0038
+      "SN_Ia": 0.0001,
+      "SN_CC": 0.0003,
+      "SLSN": 0.0039,
+      "AGN": 0.003,
+      "TDE": 0.0082,
+      "CV": 0.0029
     },
     "anomaly": {
-      "auroc": 0.665,
-      "tpr_at_1pct_far": 0.019,
+      "auroc": 0.701,
+      "tpr_at_1pct_far": 0.0,
       "n_anomalous": 53
     }
   },
-  "script_sha256": "0efe0f2f3e3340935bb3a1fbb8f250d210294e49acd22ad91a1efb52cb32a55e"
+  "script_sha256": "fb73a2419723d37ce9004faf448e9de957c256f82f1f6077b12c3c28c44fc08f",
+  "performance_note": "five-fold out-of-fold on train+val (11113 objects), argmax of the out-of-fold probabilities: accuracy 0.806, macro F1 0.712; per-class F1 SN_Ia 0.864, SN_CC 0.683, SLSN 0.422, AGN 0.880, TDE 0.518, CV 0.906"
 }
