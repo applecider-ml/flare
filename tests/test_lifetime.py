@@ -9,10 +9,19 @@ from flare import lifetime as LT
 MODELS = Path(__file__).resolve().parents[1] / "models" / "bts6"
 
 
-def test_schedule_every_detection_then_every_fifth_and_the_last():
+def test_schedule_every_detection_then_every_fifth_and_nested():
     assert LT.steps(5) == [3, 4, 5]
     s = LT.steps(47)
-    assert s[:38] == list(range(3, 41)) and s[38:] == [45, 47]
+    assert s[:38] == list(range(3, 41)) and s[38:] == [45]
+    for n in range(3, 120):     # a new detection only adds analyses
+        assert LT.steps(n + 1)[:len(LT.steps(n))] == LT.steps(n)
+
+
+def test_an_alarm_is_never_lost_when_a_detection_arrives():
+    ref = _ref()
+    p = {k: 0.5 for k in range(3, 60)}; p[47] = 1e-4     # a single very significant analysis at 47
+    seen = [ref.significance({k: p[k] for k in LT.steps(n)})["lifetime_p"] for n in range(40, 60)]
+    assert all(b <= a for a, b in zip(seen, seen[1:]))
 
 
 def test_running_minimum_is_monotone():

@@ -21,7 +21,10 @@ index, the stream rate and the thresholds of the reported levels) ships with the
 photometry that the service receives (scripts/export_lifetime_far.py).
 
 At analysis time the prefixes of the light curve are replayed with the same schedule as the reference,
-so the service keeps no state between analyses.
+so the service keeps no state between analyses. The schedule is nested (every detection count up to
+MAX_EVERY, then every STRIDE-th, independently of the length of the light curve), so that a new
+detection only adds analyses and an alarm reached at an earlier analysis is never lost; beyond
+MAX_EVERY the newest detections enter the lifetime statistic at the next multiple of STRIDE.
 """
 from __future__ import annotations
 
@@ -31,13 +34,19 @@ from pathlib import Path
 import numpy as np
 
 FILENAME = "lifetime_far.json"
-MAX_EVERY = 40      # every detection up to this count, then every fifth and the last one
+MAX_EVERY = 40      # every detection up to this count, then every fifth
 STRIDE = 5
 
 
+def on_schedule(k: int) -> bool:
+    """Whether the analysis at detection count k belongs to the replay schedule."""
+    return k >= 3 and (k <= MAX_EVERY or k % STRIDE == 0)
+
+
 def steps(n: int) -> list[int]:
-    """The analysis indices (detection counts) at which a light curve of n detections is replayed."""
-    return [k for k in range(3, n + 1) if k <= MAX_EVERY or k % STRIDE == 0 or k == n]
+    """The analysis indices (detection counts) at which a light curve of n detections is replayed;
+    steps(n) is a prefix of steps(n + 1)."""
+    return [k for k in range(3, n + 1) if on_schedule(k)]
 
 
 def running_minimum(p_by_k: dict[int, float]) -> dict[int, float]:

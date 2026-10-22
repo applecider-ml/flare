@@ -7,17 +7,13 @@ scaled by the training interquartile range, and the logits are the raw scores of
 20, on light curves truncated at that horizon). The consensus is the mean percentile rank across
 the scorers.
 
-Full-curve model: the ranks are frozen on one half of the test split (the known-class objects that
-calibrate the shipped energy alarm, untouched by any fit) and the thresholds are set on the other
-half, with one reference for every alert.
-
-Day-5/10/20 models: the p-values come from the whole validation split, which no fit touched, and
-the ranks are frozen on the test split. The p-values are Mondrian in the number of detections: the
-calibration objects are grouped into contiguous bins of `n_obs_total` with at least MIN_BIN objects
-each, and every bin has its own reference, because a single threshold flags young objects with
-many detections far more often than those with few (at day 5, 0% of the test normals with <= 3
-detections against 10% with >= 9 at a nominal 1%; with the bins, 0% and 0%). The full-curve model
-shows no such dependence (0.3-2.2% across detection counts) and keeps the single reference.
+All four models (full curve and day 5/10/20): the reference ranks and the p-values come from the
+validation split, which no fit touched (for every model, ranks frozen on one half of it and Mondrian
+p-values from the other half), so that the test split stays untouched by every calibration stage and
+serves the evaluation. The
+p-values are Mondrian in the number of detections: the calibration objects are grouped into contiguous bins
+of `n_obs_total` with at least MIN_BIN objects each, and every bin has its own reference, because a single
+threshold flags young objects with many detections far more often than those with few.
 Before anything is written, the energies recomputed here must match the bundled `known_energies`.
 
 Writes `consensus.pkl.gz` into each model directory and adds its sha256 to the manifest.
@@ -114,10 +110,8 @@ def main():
             fars=list(FARS), luna_version=luna_version, horizon_days=h, mondrian=mondrian,
             note=(f"blind consensus (mean percentile rank over {len(pipe.active_methods)} LUNA scorers); "
                   f"scorers fitted on the {len(Xtr)} training objects; "
-                  + (f"ranks frozen on half of the {len(Xkn)} {cal_split} objects and thresholds set on "
-                     f"the other half" if h is None else
-                     f"ranks frozen on the {len(Xref)} {ref_split} objects, p-values from the {len(Xkn)} "
-                     f"{cal_split} objects separately for each bin of the number of detections")))
+                  + f"ranks frozen on half of the {len(Xkn)} {cal_split} objects and p-values from the other "
+                    f"half, separately for each bin of the number of detections"))
         path = out / "consensus.pkl.gz"
         path.write_bytes(gzip.compress(pickle.dumps(bundle), 6, mtime=0))
         man_path = out / "manifest.json"; man = json.loads(man_path.read_text())

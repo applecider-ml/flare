@@ -3,7 +3,7 @@ test objects with the deployed models on the photometry that the service receive
 
 Input: a CSV with one row per object (columns population, trajectory), where trajectory is
 "k,day,model,p;..." for the analysis indices of flare.lifetime.steps (fritz_dataset/scripts/
-sequential_replay.py produces it). Only known-class objects enter the reference; the out-of-taxonomy
+sequential_replay.py produces it); analyses off the schedule of flare.lifetime are dropped. Only known-class objects enter the reference; the out-of-taxonomy
 objects are reported for the record. The stream rate is the number of sources saved per day in the
 Fritz groups that dispatch the service (measured over the stated window).
 Run: python scripts/export_lifetime_far.py --replay <csv> --rate 6.8 --rate-note "..." --models models/bts6
@@ -16,7 +16,7 @@ import pandas as pd
 
 PKG = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PKG))
-from flare.lifetime import FILENAME, running_minimum  # noqa: E402
+from flare.lifetime import FILENAME, on_schedule, running_minimum  # noqa: E402
 
 LEVELS = {"1 per week": 7.0, "1 per month": 30.0, "1 per quarter": 91.0}
 MIN_REF = 50
@@ -26,7 +26,9 @@ def traj(s):
     out = {}
     for item in str(s).split(";"):
         if item and item != "nan":
-            k, _day, _model, p = item.split(","); out[int(k)] = float(p)
+            k, _day, _model, p = item.split(",")
+            if on_schedule(int(k)):     # replays made with the earlier schedule also hold the last detection count
+                out[int(k)] = float(p)
     return out
 
 
