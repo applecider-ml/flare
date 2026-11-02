@@ -78,6 +78,13 @@ notebooks/   tutorials: flare_tutorial, why_flare_works, similarity_search, the 
 docs/        the analysis guide (unified_analysis.md) and research notes (research_notes.md)
 ```
 
+## Opt-in trajectory and continuation research
+
+The [portable benchmark](docs/trajectory_benchmark.md) implements trajectory class
+sets, causal checkpoint-query budgets, and learned continuation rankings, with
+public-data preparation and complete [results and counterexamples](docs/trajectory_benchmark/results.md).
+This research workflow does not change shipped models or service decisions.
+
 ## Citation
 
 If you use FLARE, please cite the accompanying paper (Sasli et al., in prep.).
