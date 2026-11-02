@@ -58,6 +58,23 @@ on the first 5, 10 and 20 days reach a macro F1 of 0.56, 0.63 and 0.73 on the sa
   and 10%, calibrated separately for every model. Without `luna-ood`, the anomaly energy (the
   log-sum-exp of the tree scores) gives the p-value and the alarms.
 
+## Selective-classification diagnostics
+
+`flare.selective_metrics.selective_classification_report(y_true, y_pred, class_names=...)`
+reports counts and rates for integer predictions, with `-1` denoting abstention.
+Supply the class names in index order; both five- and six-class taxonomies work.
+The report distinguishes errors per object (`unconditional_error`), errors per
+selected object (`selective_risk`), and correct labels per emitted label (`precision`).
+The confusion matrix uses true rows and predicted columns and excludes abstentions;
+each true-class group counts abstentions separately. Undefined rates are `None`
+(`null` in JSON). For multiple folds, concatenate observations to obtain pooled
+rates rather than averaging fold percentages.
+
+Run `python examples/selective_diagnostics.py` for a synthetic example where all
+five true TDEs receive correct labels, yet only 5 of 67 emitted TDE labels are
+correct. These descriptive diagnostics supply no coverage or confidence guarantee
+and do not change classifier decisions.
+
 ## SkyPortal / Fritz
 
 `flare.skyportal.analyze` is the analysis service used on Fritz. It routes each light curve to
