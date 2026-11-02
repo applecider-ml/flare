@@ -75,7 +75,12 @@ class LifetimeReference:
         return float((1 + np.searchsorted(s, m, side="right")) / (len(s) + 1))
 
     def significance(self, p_by_k: dict[int, float]) -> dict:
-        """P_life and the false-alarm rate per unit time for the per-analysis p-values of one object."""
+        """P_life and the +1-smoothed false-alarm rate for one object's per-analysis p-values.
+
+        The exporter selects levels using the in-sample count/N rate, including complete ties; the reported
+        (1+count)/(N+1) estimate can exceed that budget. A zero threshold disables a level because
+        the unrounded lifetime statistic is strictly positive.
+        """
         run = running_minimum(p_by_k)
         life = {k: self.lifetime_p(k, m) for k, m in run.items()}
         p_life = min(life.values()) if life else 1.0
