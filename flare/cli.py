@@ -23,6 +23,8 @@ def main(argv=None):
     p.add_argument("--forecast-recipe", choices=["grid", "blend"], default="grid",
                    help="blend: optional improved forecast at day 10 or 20")
     p.add_argument("--pe-horizon", type=int, choices=[5, 10, 20])
+    p.add_argument("--next-obs-horizon", type=int, choices=[5, 10],
+                   help="expected narrowing of the prediction set from one more g or r point tomorrow")
     p.add_argument("--context", help="JSON mapping file stem to external context, optionally z_phot")
     p.add_argument("--no-reconstruction", action="store_true")
     p.add_argument("--base-rate", type=float)
@@ -54,7 +56,8 @@ def main(argv=None):
             results[fp] = engine.analyze(load_events(fp), horizon_days=a.horizon,
                 context=contexts.get(Path(fp).stem), forecast_horizon=a.forecast_horizon,
                 pe_horizon=a.pe_horizon, include_reconstruction=not a.no_reconstruction,
-                base_rate=a.base_rate, forecast_recipe=a.forecast_recipe)
+                base_rate=a.base_rate, forecast_recipe=a.forecast_recipe,
+                next_obs_horizon=a.next_obs_horizon)
         if a.html:
             from .analysis_report import render_analysis
             text = render_analysis(results)

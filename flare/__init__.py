@@ -29,7 +29,7 @@ from .config import DEFAULT_SCHEME, SCHEMES, resolve_scheme
 from .model import FlareClassifier
 from .taxonomy import BROAD_CLASSES, NUM_CLASSES
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 
 def load_classifier(scheme: Optional[str] = None, horizon_days: Optional[int] = None):

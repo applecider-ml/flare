@@ -64,5 +64,17 @@ def render_analysis(records):
             panels.append('</table>')
         else:
             panels.append(f'<p>{escape(pe.get("reason", pe["status"]))}</p>')
+        nx = r.get('next_observation', {})
+        panels.append('<h3>Value of the next observation</h3>')
+        if nx.get('status') == 'ok':
+            panels.append(f'<p>Day-{nx["observation_cutoff_days"]:g} 90% set: {escape(", ".join(nx["set_before"]))}. '
+                          f'Best band for one more point tomorrow: {escape(nx["best_band"] or "neither narrows the set")}.</p>')
+            panels.append('<table><tr><th>Band</th><th>Expected set size</th><th>Expected reduction</th><th>P(single class)</th></tr>')
+            for band, v in nx['bands'].items():
+                if v['status'] == 'ok':
+                    panels.append(f'<tr><td>{band}</td><td>{v["expected_set_size"]:.2f}</td><td>{v["delta_S"]:+.2f}</td><td>{v["p_singleton"]:.2f}</td></tr>')
+            panels.append(f'</table><p>{escape(nx["calibration"])}</p>')
+        else:
+            panels.append(f'<p>{escape(nx.get("reason", nx.get("status", "disabled")))}</p>')
         panels.append('<details><summary>Full numerical result</summary><pre>' + escape(json.dumps(r, indent=2, allow_nan=False)) + '</pre></details></article>')
     return '<!doctype html><html lang="en"><meta charset="utf-8"><title>FLARE analysis</title><style>body{font:16px system-ui;max-width:1000px;margin:2rem auto;padding:0 1rem;color:#202632}article{border-top:1px solid #ddd;margin-top:2rem}svg{max-width:760px;width:100%;font:12px system-ui}td,th{text-align:left;padding:.4rem 1rem}pre{white-space:pre-wrap;overflow-wrap:anywhere}p{line-height:1.5}</style><h1>FLARE analysis</h1>' + ''.join(panels) + '</html>'
