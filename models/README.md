@@ -7,9 +7,12 @@ The one exception is `consensus.pkl.gz`, a pickled LUNA pipeline that is read on
 | directory | content |
 |---|---|
 | `bts6/` | the six-class classifier of the paper (SN Ia, SN CC, SLSN, AGN, TDE, CV): five-way top level (`top.txt`), SLSN head (`slsn_branch.txt`), cross-conformal calibration (`conformal.json`), anomaly space and calibration (`ad_space.txt`, `anomaly_calibration.json`), Venn-Abers tables (`venn_abers.json`), blind-consensus anomaly alarm at 1%, 5% and 10% false-alarm rates (`consensus.pkl.gz`), model card and manifest |
-| `bts6/early/h5`, `h10`, `h20` | the same classifier trained on light curves truncated at 5, 10 and 20 days, each with its own calibration |
+| `bts6/early/h5`, `h10`, `h20` | the same classifier trained on light curves truncated at 5, 10 and 20 days (BTS + confirmed Fritz sources), each with its own calibration; `early/report.json` has the out-of-fold performance |
 | `bts6/forecast/`, `bts6/forecast_blend/`, `bts6/pe_ia/` | forecast and SN Ia parameter-estimation models of `flare.load_analysis()` |
 | `bts6/onnx/` | ONNX exports of the top level and the SLSN head |
+| `bts6/lifetime_far.json` | lifetime false-alarm reference of `flare.lifetime`: running minima per analysis, stream rate and the thresholds of one false alarm per week, month and quarter |
+| `bts6/review_combiner.json` | supervised review combiner of `flare.review`, refitted by `scripts/review_nightly.py` |
+| `bts6/forecast_pe_manifest.json` | hashes of the forecast and SN Ia parameter files, checked at load time |
 
 Load: `flare.load_classifier()` (full curve) or `flare.load_classifier(horizon_days=5)`.
 The full-curve and early models are fitted on the benchmark's train and validation splits
