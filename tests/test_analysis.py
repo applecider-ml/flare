@@ -137,6 +137,40 @@ class AnalysisTests(unittest.TestCase):
             self.assertLessEqual(max(b['days']), t.max())
         self.assertEqual(reconstruct(a[:2])['status'], 'insufficient_data')
 
+    def test_append_detection_keeps_the_event_format(self):
+        from flare.analysis import append_detection
+        a = observed_events(events(), 5)
+        b = append_detection(a, 3.0, 1, 18.5, .08)
+        self.assertEqual(b.shape, (len(a) + 1, 15))
+        self.assertTrue(np.all(np.diff(b[:, 0]) >= 0))
+        row = b[np.flatnonzero(b[:, 0] == 3.0)[0]]
+        self.assertAlmostEqual(23.9 - 2.5 * row[3], 18.5)
+        self.assertEqual(row[2], 1.)
+        self.assertEqual(row[6], 1.)
+        np.testing.assert_allclose(b[:, 1], np.r_[0, np.diff(b[:, 0])])
+
+    def test_next_observation_value_is_causal_reproducible_and_bounded(self):
+        original = events()
+        changed = original.copy()
+        changed[changed[:, 0] > 5, 3] = 99.
+        r = self.engine.next_observation_value(original, 5)
+        self.assertEqual(r, self.engine.next_observation_value(changed, 5))
+        self.assertEqual(r['set_size_before'], len(r['set_before']))
+        for v in r['bands'].values():
+            self.assertEqual(v['status'], 'ok')
+            self.assertGreaterEqual(v['expected_set_size'], 0)
+            self.assertLessEqual(v['expected_set_size'], 6)
+            self.assertAlmostEqual(v['delta_S'], r['set_size_before'] - v['expected_set_size'])
+            self.assertTrue(0 <= v['p_singleton'] <= 1)
+            self.assertEqual(v['next_day'], 6.)
+        json.dumps(r, allow_nan=False)
+        with self.assertRaisesRegex(ValueError, 'next-observation horizon'):
+            self.engine.next_observation_value(original, 20)
+        out = self.engine.analyze(original, horizon_days=10, include_reconstruction=False, next_obs_horizon=10)
+        self.assertEqual(out['next_observation']['observation_cutoff_days'], 10)
+        self.assertEqual(self.engine.analyze(original, horizon_days=10, include_reconstruction=False)['next_observation']['status'], 'disabled')
+        self.assertIn('Value of the next observation', render_analysis({'x': out}))
+
 
 if __name__ == '__main__':
     unittest.main()
