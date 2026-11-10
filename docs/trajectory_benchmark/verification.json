@@ -1,0 +1,183 @@
+{
+  "schema": "flare-trajectory-benchmark-verification-v1",
+  "class_names": [
+    "SN_Ia",
+    "SN_CC",
+    "SLSN",
+    "AGN",
+    "TDE",
+    "CV"
+  ],
+  "horizons": [
+    5,
+    10,
+    20,
+    100
+  ],
+  "dataset": "bundled public BTS benchmark; train then validation only; test and anomalies excluded",
+  "n_development": 8922,
+  "n_ordered_features": 190,
+  "execution_code_sha256": {
+    "flare/trajectory_benchmark.py": "e739c4f733ebd2f594efa9a91d7cd15b46f0920a8d03d7d68b0d66bb9a0b4a3c",
+    "flare/trajectory_sets.py": "09a09f6bc0a4b2b0da6f79db8fdfa3125b0c7fa91c85a586503c9fc13853e989",
+    "flare/checkpoint_budget.py": "806c3cd57781baa151e3543cf64c21f5d6e124d3aec1b3f80065c48ba2a52839",
+    "flare/continuation.py": "9f9f4fa68dfa85dcdcf4953ca1d1d7f9aa2d57cfac46319be289396b7f768e32"
+  },
+  "input_archive_sha256": {
+    "fold0.npz": "f2fd36125b429f03480509a8f043677d15ce33de82777c7a26ff29f23d919def",
+    "fold1.npz": "109ba97002a057c49fae0c016e6b1b3c1217d6b23beac81b59e8f0ff222a7ccd",
+    "fold2.npz": "a91090725b13c527d5bbf2008addcaf9bf76494639245c0218c2998238a9e4be",
+    "fold3.npz": "f0d48740165b73fcfed4aa9650a91450dbe02bc04cbba771d79cf4f769f6100c",
+    "fold4.npz": "abf4dd745da8fc96a241bfc6734ac8faf8024769fbf19203478585a8344d9e31"
+  },
+  "software_versions": {
+    "numpy": "2.3.5",
+    "scipy": "1.17.1",
+    "scikit-learn": "1.8.0",
+    "lightgbm": "4.6.0"
+  },
+  "grids": {
+    "rare_alphas": [
+      0.01,
+      0.05,
+      0.1,
+      0.2
+    ],
+    "rare_arms": [
+      "envelope_pooled",
+      "envelope_mondrian",
+      "bonferroni_pooled",
+      "bonferroni_mondrian",
+      "terminal_mondrian",
+      "fixedlook_mondrian"
+    ],
+    "budget_alphas": [
+      0.1,
+      0.2
+    ],
+    "budget_multipliers": [
+      0,
+      0.25,
+      0.5,
+      1,
+      2,
+      3
+    ],
+    "heuristics": [
+      "round_robin",
+      "entropy",
+      "candidate_count",
+      "rare_mass",
+      "confidence"
+    ],
+    "random_seeds": [
+      0,
+      1,
+      2
+    ],
+    "continuation_variants": [
+      "aggregate_output",
+      "macro_output",
+      "macro_quality"
+    ]
+  },
+  "numerical_replay": {
+    "rare_cells": 480,
+    "budget_cells": 1320,
+    "arrays": 24665,
+    "action_records": 1592052,
+    "exact": true
+  },
+  "continuation_parameter_verification": {
+    "n_reward_cost_pairs": 60,
+    "all_features_scalers_ridge_parameters_exact": true,
+    "max_absolute_difference": 0
+  },
+  "public_preparation": {
+    "all_four_feature_caches_exact": true,
+    "n_feature_values_compared": 6780720,
+    "n_classifier_fits": 20,
+    "all_five_fold_archive_fields_exact": true,
+    "compared_fields": [
+      "IDs",
+      "probabilities",
+      "cumulative nobs",
+      "dataset truth",
+      "classifier fit membership"
+    ],
+    "kfold_seed": 20261102,
+    "early_stop_seeds": [
+      100,
+      101,
+      102,
+      103,
+      104
+    ],
+    "maximum_rounds": 2000,
+    "threads": 2,
+    "feature_input_hashes": {
+      "class_names": [
+        "SN_Ia",
+        "SN_CC",
+        "SLSN",
+        "AGN",
+        "TDE",
+        "CV"
+      ],
+      "horizons": [
+        5,
+        10,
+        20,
+        100
+      ],
+      "n_development": 8922,
+      "split_order": [
+        "train",
+        "val"
+      ],
+      "prefix_recipe": "feature_frame(observed_events(load_events(path), horizon), context)",
+      "input_sha256": {
+        "hosts.csv": "c6d553c321af4294eb7fceb46eb348da1bb41a00f287f996dc9c4eb3658f39ef",
+        "hosts_photoz.csv": "e90821567171f5b88cd0f1fa607e09b76a9cc5c039a79b3cca2e45be8b8c0167",
+        "context_gaia_wise.csv": "1565d28c47a1cecf0da8c65490936c0b2f0b360fb23575c49207899f63c03117",
+        "ps1_position.csv": "b973ab5d32e45b1a92ad984cffae216e73969e1a7025ed891b1576f472baaf1d"
+      },
+      "split_sha256": {
+        "train": "08b0b4837b555a24ef8a4891b40b8f88fc783c0ed554a068c5304cb6b9ed6551",
+        "val": "72037e72ffb4116f724f08146ebbe25f03d87cd175a511825e1345cefb24e55f"
+      },
+      "feature_sha256": {
+        "5": "1e3d22303088014e982941d30bbacea4400c4b34403808e724d1298b441eb715",
+        "10": "a344710398e247627d2c4536b1321c7a58424f58308ba83a2e4458d49f534e1a",
+        "20": "82549ef94452a709f999fe4652ff0b15f3b2822c86ffa3e1141e8bf7838994ef",
+        "100": "9f9f30f44c5da926b17421c798123d87a8e08ba1c9534bca32b03064beb7fab9"
+      }
+    },
+    "code_sha256": {
+      "scripts/prepare_trajectory_benchmark.py": "91136421eaca77f19e85fcd8bf5f64bdccce38b7e58e86f3e3dcb8067c5c59d7",
+      "scripts/train_early_cc.py": "3fce0756bc551897cd9a65e0802070010afff97bc3b16dd44d3a3dbb87717987",
+      "scripts/evaluate_unified.py": "61e1009d50e6718916321a5ebdac47d0ea8069d2b368f5a3c4a1f5af3d15e22b",
+      "flare/analysis.py": "5183b36b0909d8e516ed1204414df66d3691830bfee896cdf90b4c756bab19d3",
+      "flare/data.py": "9de7d32227609899e420ccb00c6a05e25bc912a08cd7a624e164e018e510a7f7",
+      "flare/features.py": "794e9d94480c8e530da31c09d8a822ae1a227425ba0b9a0f1f30e410fe52a287",
+      "flare/config.py": "508f61716166ebb6af0db5edea4c2e0285e4606c85878464b339f3a8ac0c3282",
+      "flare/hierarchical.py": "74d8804ee5829ad8e208b7f65e3f79e7081f7d77a8f55b13f726d6312dbe565f"
+    }
+  },
+  "validation": {
+    "tests_passed": 200,
+    "tests_failed": 0,
+    "warnings": 2,
+    "warning_type": "existing Gaussian-process kernel convergence warnings",
+    "wheel_build": true,
+    "isolated_installed_wheel_four_module_import_and_api_smoke": true
+  },
+  "artifact_sha256": {
+    "frontier.png": "c37c6a493464f0d436760534202176af71a8f545f3ce0e017cc8fcdfd8ea75e8",
+    "results.json.gz": "2c7a23ecf8181961a4295b1e41fa6e28c18bab250060902b9544a210810a9220",
+    "COMPLETE": "85ae6d7aa4963dd3f5ec2e1b51849a93f2c8254a2ecdddc791d9475b80300551",
+    "class_counts.csv": "f7f052d7cdd133c7807fd8aae86994f47ea194ddf47d402f9d8fb805893043e0",
+    "budget_grid.csv": "9a74a175bcb1cc29ab16a2d69b1dccc0d136520ab03315edd8f1a8c76072f92b",
+    "rare_grid.csv": "75dd44014ceed6cc45422e30ca00d271993f3611b083082d3232eb4c98309236"
+  }
+}
