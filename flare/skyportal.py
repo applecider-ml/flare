@@ -9,7 +9,8 @@ logic is versioned here with the models it uses.
 
 Parameters (all optional): horizon_days (100), context ("live" | "none"),
 base_rate (0.0326), agent (False; LLM triage through applecider-agents, needs
-ANTHROPIC_API_KEY), plot (True), redshift, ra, dec.
+ANTHROPIC_API_KEY), plot (True), forecast (True), reconstruction (True; GP curve over the
+observed data, drawn with the forecast as one model light curve), redshift, ra, dec.
 """
 from __future__ import annotations
 
@@ -429,6 +430,41 @@ def forecast_overlay(rows, context: dict, z, params: dict) -> dict:
                 note="68% band; the first point of each curve is the last detection on the forecast day")
 
 
+def reconstruction_overlay(rows) -> dict:
+    """FLARE's Matern-3/2 GP reconstruction of the observed g and r light curve, in the same
+    ``model_lightcurve`` form as the forecast, so SkyPortal draws the model over the data."""
+    from .fetch import to_events
+    from .analysis import reconstruct
+    rows = sorted(rows)
+    first = float(rows[0][0])
+    out = reconstruct(to_events(list(rows), horizon_days=100.0))
+    curves = {}
+    for band, name in SKYPORTAL_FILTER.items():
+        b = (out.get("bands") or {}).get(band) or {}
+        if b.get("status") != "ok":
+            continue
+        curves[name] = [[round(first + float(d), 5), round(float(m), 4), round(float(l), 4), round(float(u), 4)]
+                        for d, m, l, u in zip(b["days"], b["magnitude"], b["lower68"], b["upper68"])
+                        if m is not None and math.isfinite(float(m))]
+    curves = {k: v for k, v in curves.items() if v}
+    return dict(status="ok" if curves else "insufficient_data", method=out.get("method"),
+                calibration=out.get("calibration"), model_lightcurve=curves,
+                note="68% band from the GP standard deviation and the pooled empirical factor")
+
+
+def join_overlays(reconstruction: dict | None, forecast: dict | None) -> dict:
+    """One curve per filter: the reconstruction over the observed span, then the forecast points
+    after its end (forecast points inside the observed span would double back in time)."""
+    rec = (reconstruction or {}).get("model_lightcurve") or {}
+    fc = (forecast or {}).get("model_lightcurve") or {}
+    joined = {}
+    for name in sorted(set(rec) | set(fc)):
+        head = rec.get(name, [])
+        end = head[-1][0] if head else -math.inf
+        joined[name] = head + [p for p in fc.get(name, []) if p[0] > end]
+    return {k: v for k, v in joined.items() if v}
+
+
 def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_dir: str = ".") -> dict:
     """rows: sorted (mjd, fid, mag, magerr) detections; redshift: SkyPortal value or None."""
     from .fetch import to_events
@@ -562,8 +598,16 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
         "annotations": skyportal_annotations(cls, verdict), "classifications": skyportal_classifications(cls),
         "annotations_flat": annotations_for(cls, verdict), "plot_files": plots,
     }
-    if forecast is not None:
-        result["results"]["forecast"] = {k: v for k, v in forecast.items() if k != "model_lightcurve"}
-        if forecast.get("model_lightcurve"):
-            result["model_lightcurve"] = forecast["model_lightcurve"]
+    reconstruction = None
+    if _as_bool(params.get("reconstruction"), True):
+        try:
+            reconstruction = reconstruction_overlay(rows)
+        except Exception as e:  # noqa: BLE001 — the overlay is optional, as the forecast
+            reconstruction = dict(status="error", reason=f"{type(e).__name__}: {e}")
+    for key, block in (("forecast", forecast), ("reconstruction", reconstruction)):
+        if block is not None:
+            result["results"][key] = {k: v for k, v in block.items() if k != "model_lightcurve"}
+    overlay = join_overlays(reconstruction, forecast)
+    if overlay:
+        result["model_lightcurve"] = overlay
     return result
