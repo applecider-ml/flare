@@ -56,6 +56,11 @@ def test_forecast_overlay_shape():
         assert all(len(p) == 4 for p in curve)
         mjd = [p[0] for p in curve]; assert mjd == sorted(mjd) and mjd[0] > t0
         assert all(p[2] <= p[1] <= p[3] for p in curve)
+    # the curve starts over the data (GP reconstruction) and runs past it (forecast)
+    assert r["results"]["reconstruction"]["status"] == "ok"
+    last = max(t for t, *_ in rows)
+    for curve in ml.values():
+        assert curve[0][0] < t0 + 1 and curve[-1][0] > last + 5
 
 
 def test_forecast_skipped_on_sparse_light_curve():
@@ -63,6 +68,27 @@ def test_forecast_skipped_on_sparse_light_curve():
     rows = [(61312.15, 1, 15.86, 0.03), (61312.21, 2, 15.89, 0.03)]
     r = analyze(rows, None, dict(context="none", plot=False), resource_id="sparse", work_dir=".")
     assert r["results"]["forecast"]["status"] == "skipped" and "model_lightcurve" not in r
+
+
+def test_reconstruction_shown_when_forecast_is_skipped():
+    """A light curve too sparse in g for a forecast still gets the reconstruction over its data."""
+    from flare.skyportal import analyze
+    rows = [(61338.38, 2, 19.64, 0.17), (61338.41, 2, 19.45, 0.12), (61341.35, 2, 19.34, 0.2),
+            (61347.22, 2, 19.21, 0.1), (61347.26, 1, 19.56, 0.14)]
+    r = analyze(rows, None, dict(context="none", plot=False), resource_id="sparse_g", work_dir=".")
+    assert r["results"]["forecast"]["status"] == "skipped"
+    ml = r["model_lightcurve"]
+    assert set(ml) == {"ztfr"} and ml["ztfr"][0][0] == 61338.38 and ml["ztfr"][-1][0] == 61347.22
+
+
+def test_join_overlays_drops_forecast_points_inside_the_data():
+    from flare.skyportal import join_overlays
+    rec = dict(model_lightcurve={"ztfr": [[10.0, 19, 18.9, 19.1], [20.0, 19.5, 19.4, 19.6]]})
+    fc = dict(model_lightcurve={"ztfr": [[15.0, 19.2, 19.2, 19.2], [25.0, 20, 19.7, 20.3]],
+                                "ztfg": [[25.0, 20.5, 20.2, 20.8]]})
+    out = join_overlays(rec, fc)
+    assert [p[0] for p in out["ztfr"]] == [10.0, 20.0, 25.0] and out["ztfg"] == [[25.0, 20.5, 20.2, 20.8]]
+    assert join_overlays(None, None) == {}
 
 
 def test_noise_points_dropped_and_no_class_on_insufficient_data():
