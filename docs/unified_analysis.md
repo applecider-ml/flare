@@ -75,6 +75,14 @@ day 10 with a day-17 observation cutoff uses detections through day 10, and is
 labelled accordingly. Both forecast and PE are disabled unless their horizons
 are selected. `--no-reconstruction` disables the GP fit.
 
+The SkyPortal service (`flare.skyportal.analyze`) runs the same estimate by
+default: the estimation day is the smallest of 5, 10 and 20 d that contains
+every detection, the gate is the `{SN_Ia}` set at that day, and the result is
+returned in `results.pe`, in the annotations `flare_pe_t0_mjd`, `flare_pe_mB`,
+`flare_pe_x1`, `flare_pe_c` (each with `_err68`) and in the status message.
+`pe=false` disables it and `pe="force"` skips the gate for a source already
+confirmed as SN Ia.
+
 For a confirmed Ia, `engine.pe(events, 10, context=...)` explicitly requests an
 Ia-conditional estimate without the classifier gate. `engine.forecast(...)`
 and `engine.verify_models()` are also available independently. MD5 checks
