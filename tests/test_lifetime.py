@@ -56,3 +56,12 @@ def test_shipped_reference_is_consistent():
     assert LT.FILENAME in man
     for k in ref.ks:
         assert np.all(np.diff(ref.ref[int(k)]) >= 0) and len(ref.ref[int(k)]) >= 50
+
+
+def test_reading_of_the_lifetime_fraction():
+    """The fraction of saved sources maps to false alarms per week and '1 in N alerts' (README table)."""
+    for frac, per_week, words, one_in in ((0.005, 0.24, "one a month", 29.4e6), (0.02, 0.95, "one a week", 7.4e6),
+                                          (0.15, 7.14, "one a day", 1.0e6), (0.3, 14.28, "more than one a day", 0.5e6)):
+        r = LT.reading(frac, 6.8)
+        assert abs(r["false_alarms_per_week"] - per_week) < 0.01 and r["rate_in_words"] == words
+        assert abs(r["one_in_alerts"] - one_in) / one_in < 0.02
