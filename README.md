@@ -69,6 +69,18 @@ confirmed Fritz sources, and reach an out-of-fold macro F1 of 0.66, 0.71 and 0.7
   `flare/lifetime.py` turns the smallest per-analysis p-value so far into a false-alarm rate per
   unit time, calibrated by replaying the known test objects detection by detection
   (`models/bts6/lifetime_far.json`), with levels of one false alarm per week, month and quarter.
+  The service reports it as the share of saved known sources that are at least as significant,
+  the false alarms per week this implies at the Fritz stream rate (6.8 saved sources a day), and
+  the equivalent one in N alerts for about a million alerts a night:
+
+  | Saved sources flagged | False alarms per week | One every | Per ~10⁶ alerts a night |
+  |---|---|---|---|
+  | 0.5% | 0.24 | month | 1 in 30 million |
+  | 1% | 0.5 | two weeks | 1 in 15 million |
+  | 2% | 1 | week | 1 in 7 million |
+  | 5% | 2.4 | three days | 1 in 3 million |
+  | 10% | 4.8 | day and a half | 1 in 1.5 million |
+  | 15% | 7 | day | 1 in 1 million |
 - **Review priority:** once operators have confirmed members of several new families,
   `flare/review.py` combines the anomaly scorers into a supervised review ranking
   (`scripts/review_nightly.py` refits it from the Fritz classifications); the blind alarm is unchanged.
