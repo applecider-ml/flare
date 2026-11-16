@@ -364,6 +364,9 @@ def annotations_for(cls: dict, verdict: dict, pe: dict | None = None) -> dict:
         # false-alarm rate per unit time over the analyses of this source (flare.lifetime)
         "flare_lifetime_p": (a.get("lifetime") or {}).get("lifetime_p"),
         "flare_false_alarms_per_day": (a.get("lifetime") or {}).get("false_alarms_per_day"),
+        # the same as the share of saved known sources at least as significant, and per week
+        "flare_lifetime_fraction": (a.get("lifetime") or {}).get("lifetime_false_alarm_fraction"),
+        "flare_false_alarms_per_week": (a.get("lifetime") or {}).get("false_alarms_per_week"),
         "flare_far_level": (a.get("lifetime") or {}).get("level"),
         # review priority from operator confirmations (flare.review): smaller p = review first
         "flare_review_p": (a.get("review") or {}).get("review_p"),
@@ -615,9 +618,15 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             else f"anomaly score not calibrated at this phase (energy percentile {a['energy_percentile']:.1f} for the record)")
     life = a.get("lifetime")
     if life is not None:
-        days = life.get("one_false_alarm_per_days")
-        anom += (f"; over {life['n_analyses']} analyses one false alarm per {days:g} days on the stream"
-                 f" ({life['level'] or 'below 1 per week'})" if days else f"; over {life['n_analyses']} analyses no false-alarm level reached")
+        frac = life.get("lifetime_false_alarm_fraction")
+        if frac is not None and life.get("false_alarms_per_week") is not None:
+            one_in = life.get("one_in_alerts")
+            anom += (f"; over {life['n_analyses']} analyses, {100 * frac:.1f}% of saved known sources are as significant, "
+                     f"i.e. {life['false_alarms_per_week']:g} false alarms per week ({life['rate_in_words']}"
+                     + (f", 1 in {one_in / 1e6:g} million alerts" if one_in else "") + ")"
+                     + ("; anomaly alarm (one false alarm a week or rarer)" if life["levels"].get(LIFETIME_ALARM_LEVEL) else ""))
+        else:
+            anom += f"; over {life['n_analyses']} analyses no false-alarm level reached"
     head = f"FLARE ({cls['model']}, {len(events)} detections over {span:.1f} d)"
     if verdict["verdict"] == "ambiguous" and cls["predicted"] == "SN":
         message = (f"{head}: supernova (p={cls['probabilities_coarse']['SN']:.2f}), type unresolved, 90% set {setstr}, "

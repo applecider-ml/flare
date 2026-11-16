@@ -36,6 +36,21 @@ import numpy as np
 FILENAME = "lifetime_far.json"
 MAX_EVERY = 40      # every detection up to this count, then every fifth
 STRIDE = 5
+# The reading of a lifetime false-alarm fraction (the share of saved known-class sources at least as
+# significant) at the stream rate of the reference: false alarms per week, in words, and per alert of a
+# stream of about ALERTS_PER_NIGHT alerts a night. Bands are the upper fractions, strictest first.
+ALERTS_PER_NIGHT = 1.0e6
+READING_BANDS = ((0.005, "one a month"), (0.01, "one every two weeks"), (0.02, "one a week"),
+                 (0.05, "one every three days"), (0.10, "one every day and a half"), (0.15, "one a day"))
+
+
+def reading(fraction: float, rate_per_day: float) -> dict:
+    """False alarms per week, the band in words and the equivalent '1 in N alerts' for a fraction."""
+    per_week = fraction * rate_per_day * 7.0
+    band = next((words for upper, words in READING_BANDS if fraction <= upper), "more than one a day")
+    one_in = 7.0 * ALERTS_PER_NIGHT / per_week if per_week > 0 else None
+    return {"false_alarms_per_week": round(per_week, 2), "rate_in_words": band,
+            "one_in_alerts": round(one_in, -5) if one_in else None}
 
 
 def on_schedule(k: int) -> bool:
@@ -91,6 +106,7 @@ class LifetimeReference:
             "lifetime_false_alarm_fraction": round(frac, 5),
             "false_alarms_per_day": round(far_day, 4),
             "one_false_alarm_per_days": round(1.0 / far_day, 1) if far_day > 0 else None,
+            **reading(frac, self.rate_per_day),
             "level": level,
             "levels": {name: bool(p_life <= thr) for name, thr in self.levels.items()},
             "n_analyses": len(run),
