@@ -12,9 +12,12 @@ import argparse
 import json
 import sys
 
+from . import __version__
+
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="flare", description=__doc__.split("\n")[0])
+    ap.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("analyze", help="offline BTS6 analysis of local FLARE event files")
     p.add_argument("files", nargs="+")
@@ -64,14 +67,16 @@ def main(argv=None):
         else:
             text = json.dumps(results, indent=2, allow_nan=False)
         if a.out:
-            Path(a.out).write_text(text + "\n")
+            Path(a.out).write_text(text + "\n", encoding="utf-8")
         else:
             print(text)
         return 0
 
     from . import load_classifier
     from .report import build_record, render
-    clf = load_classifier(a.scheme)
+
+    horizon_int = int(a.horizon) if a.horizon in (5, 10, 20) else None
+    clf = load_classifier(a.scheme, horizon_days=horizon_int)
 
     records, failed = {}, {}
     for oid in a.ids:
@@ -94,10 +99,15 @@ def main(argv=None):
         if failed:
             payload["_failed"] = failed
         text = json.dumps(payload, indent=1)
-        (open(a.out, "w").write(text) if a.out else print(text))
+        if a.out:
+            with open(a.out, "w", encoding="utf-8") as f:
+                f.write(text + "\n")
+        else:
+            print(text)
     else:
         out = a.out or "flare_report.html"
-        open(out, "w").write(render(records))
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(render(records))
         print(f"wrote {out}", file=sys.stderr)
     return 0
 

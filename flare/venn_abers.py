@@ -49,8 +49,11 @@ def intervals(probs: np.ndarray, table: dict, classes) -> tuple[np.ndarray, np.n
         t = table[c]
         k = np.searchsorted(np.asarray(t["edges"]), probs[:, j], side="right")
         L[:, j], U[:, j] = np.asarray(t["p0"])[k], np.asarray(t["p1"])[k]
-    M = U / (1.0 - L + U)
-    return L, U, M / M.sum(axis=1, keepdims=True)
+    denom = 1.0 - L + U
+    M = np.where(denom > 0, U / denom, 0.0)
+    total = M.sum(axis=1, keepdims=True)
+    norm_M = np.where(total > 0, M / total, 1.0 / len(classes))
+    return L, U, norm_M
 
 
 def load_table(path: str | Path) -> dict | None:

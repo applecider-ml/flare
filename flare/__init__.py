@@ -26,10 +26,16 @@ Quick start:
 from typing import Optional
 
 from .config import DEFAULT_SCHEME, SCHEMES, resolve_scheme
-from .model import FlareClassifier
-from .taxonomy import BROAD_CLASSES, NUM_CLASSES
+from .taxonomy import BROAD_CLASSES, BTS6_CLASSES, BTS6_TOP_CLASSES, NUM_CLASSES
 
 __version__ = "2.1.0"
+
+
+def __getattr__(name: str):
+    if name == "FlareClassifier":
+        from .model import FlareClassifier
+        return FlareClassifier
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def load_classifier(scheme: Optional[str] = None, horizon_days: Optional[int] = None):
@@ -66,7 +72,8 @@ def load_analysis(**kwargs):
 
 
 __all__ = ["FlareClassifier", "load_classifier", "load_analysis", "resolve_scheme",
-           "SCHEMES", "DEFAULT_SCHEME", "BROAD_CLASSES", "NUM_CLASSES"]
+           "SCHEMES", "DEFAULT_SCHEME", "BROAD_CLASSES", "NUM_CLASSES",
+           "BTS6_CLASSES", "BTS6_TOP_CLASSES"]
 
 
 def _cli():                       # console_scripts entry point: `flare`

@@ -203,7 +203,7 @@ def photoz(ra: float, dec: float) -> dict:
 def m_pseudo(peak_mag: float, z_phot: float) -> float:
     """Pseudo-absolute peak magnitude from a photometric redshift."""
     d = lumdist_mpc(z_phot)[0]
-    if not np.isfinite(d) or not np.isfinite(peak_mag):
+    if not np.isfinite(d) or d <= 0 or not np.isfinite(peak_mag):
         return float("nan")
     return float(peak_mag - 5 * np.log10(d * 1e6 / 10.0))
 

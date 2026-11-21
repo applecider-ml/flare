@@ -16,3 +16,8 @@ BROAD2ID = {c: i for i, c in enumerate(BROAD_CLASSES)}
 ID2BROAD_ID = {i: BROAD2ID[ORIG2BROAD[n]] for i, n in enumerate(SUBCLASS_ID2NAME)}
 TDE_IDX = BROAD2ID["TDE"]
 AGN_IDX = BROAD2ID["AGN"]
+
+# The shipped BTS6 taxonomy
+BTS6_CLASSES = ["SN_Ia", "SN_CC", "SLSN", "AGN", "TDE", "CV"]
+BTS6_TOP_CLASSES = ["SN_Ia", "SN_CC+", "AGN", "TDE", "CV"]
+NUM_BTS6_CLASSES = len(BTS6_CLASSES)

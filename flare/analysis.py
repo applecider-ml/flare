@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from . import data as D
-from .config import BTS6, PKG_ROOT
+from .config import BTS6, MODELS_DIR, PKG_ROOT
 from .features import extract_from_array
 
 
@@ -133,7 +133,7 @@ class FlareAnalysis:
             from . import load_classifier
             classifier = load_classifier("bts6")
         self.classifier = classifier
-        self.model_dir = Path(model_dir) if model_dir else PKG_ROOT / "models/bts6"
+        self.model_dir = Path(model_dir) if model_dir else MODELS_DIR / "bts6"
         self.num_threads = num_threads
         self._models = {}
         self._manifest = None

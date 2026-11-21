@@ -60,7 +60,8 @@ def render_analysis(records):
             panels.append('<table><tr><th>Parameter</th><th>Estimate</th><th>68% interval</th><th>Unit</th></tr>')
             for target, v in pe['parameters'].items():
                 lo, hi = v['interval68']
-                panels.append(f'<tr><td>{escape(target)}</td><td>{v["value"]:.3f}</td><td>{lo:.3f} – {hi:.3f}</td><td>{escape(pe["units"][target])}</td></tr>')
+                unit = pe.get("units", {}).get(target, "")
+                panels.append(f'<tr><td>{escape(target)}</td><td>{v["value"]:.3f}</td><td>{lo:.3f} – {hi:.3f}</td><td>{escape(unit)}</td></tr>')
             panels.append('</table>')
         else:
             panels.append(f'<p>{escape(pe.get("reason", pe["status"]))}</p>')

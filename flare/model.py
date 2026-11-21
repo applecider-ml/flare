@@ -20,12 +20,12 @@ import numpy as np
 import pandas as pd
 
 from . import conformal
+from .config import MODELS_DIR, PKG_ROOT
 from .features import extract_object_features
 from .taxonomy import BROAD_CLASSES, NUM_CLASSES
 
-PKG_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MODEL = PKG_ROOT / "models/flare_lgbm.txt"
-DEFAULT_CONFORMAL = PKG_ROOT / "models/conformal.json"
+DEFAULT_MODEL = MODELS_DIR / "flare_lgbm.txt"
+DEFAULT_CONFORMAL = MODELS_DIR / "conformal.json"
 
 
 class FlareClassifier:

@@ -442,7 +442,8 @@ def build_record(obj_id, clf=None, ra=None, dec=None, peak_mag=None,
 
     if clf is None:
         from . import load_classifier
-        clf = load_classifier("bts6")
+        h_int = int(horizon_days) if horizon_days in (5, 10, 20) else None
+        clf = load_classifier("bts6", horizon_days=h_int)
 
     if events is None:
         from .fetch import coords, fetch_photometry, to_events

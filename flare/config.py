@@ -29,6 +29,19 @@ from typing import List, Optional
 PKG_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCHEME = "bts6"
 
+
+def _resolve_models_dir() -> Path:
+    env_dir = os.environ.get("FLARE_MODELS_DIR")
+    if env_dir:
+        return Path(env_dir)
+    pkg_dir = Path(__file__).resolve().parent
+    if (pkg_dir / "models" / "bts6").exists():
+        return pkg_dir / "models"
+    return PKG_ROOT / "models"
+
+
+MODELS_DIR = _resolve_models_dir()
+
 HOST_COLS = ["host_sep", "host_r", "host_i", "host_gr", "host_ri", "host_iz",
              "host_ext", "n_ext_30", "near_sep", "near_ext"]
 PZ_COLS = ["M_pseudo"]
@@ -58,8 +71,8 @@ BROAD5 = SchemeConfig(
     classes=["SNI", "SNII", "CV", "AGN", "TDE"],
     top_classes=["SNI", "SNII", "CV", "AGN", "TDE"],
     model_paths={
-        "top": PKG_ROOT / "models/flare_lgbm.txt",
-        "conformal": PKG_ROOT / "models/conformal.json",
+        "top": MODELS_DIR / "flare_lgbm.txt",
+        "conformal": MODELS_DIR / "conformal.json",
     },
 )
 
@@ -68,12 +81,12 @@ BTS6 = SchemeConfig(
     classes=["SN_Ia", "SN_CC", "SLSN", "AGN", "TDE", "CV"],
     top_classes=["SN_Ia", "SN_CC+", "AGN", "TDE", "CV"],
     model_paths={
-        "top": PKG_ROOT / "models/bts6/top.txt",
-        "slsn_branch": PKG_ROOT / "models/bts6/slsn_branch.txt",
-        "conformal": PKG_ROOT / "models/bts6/conformal.json",
-        "ad_space": PKG_ROOT / "models/bts6/ad_space.txt",
-        "anomaly_calibration": PKG_ROOT / "models/bts6/anomaly_calibration.json",
-        "card": PKG_ROOT / "models/bts6/model_card.json",
+        "top": MODELS_DIR / "bts6/top.txt",
+        "slsn_branch": MODELS_DIR / "bts6/slsn_branch.txt",
+        "conformal": MODELS_DIR / "bts6/conformal.json",
+        "ad_space": MODELS_DIR / "bts6/ad_space.txt",
+        "anomaly_calibration": MODELS_DIR / "bts6/anomaly_calibration.json",
+        "card": MODELS_DIR / "bts6/model_card.json",
     },
     external_cols=HOST_COLS + PZ_COLS + GW_COLS + POS_COLS,
 )

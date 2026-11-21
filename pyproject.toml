@@ -38,6 +38,8 @@ agent = ["applecider-agents @ https://github.com/applecider-ml/applecider-agents
 # the OSG runtime image on top of that (jax is not used by FLARE itself; the OSG
 # wrapper environment expects it for its CPU-affinity setup)
 osg = ["flare-transients[skyportal]", "jax"]
+test = ["pytest>=7.0", "pytest-cov"]
+dev = ["flare-transients[test,figures,train]", "ruff"]
 
 [tool.setuptools]
 packages = ["flare"]
@@ -45,3 +47,15 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*.txt", "../models/bts6/*.json", "../models/bts6/*.gz", "../models/bts6/forecast/*.txt", "../models/bts6/forecast/*.json", "../models/bts6/forecast_blend/*.txt", "../models/bts6/forecast_blend/*.json", "../models/bts6/pe_ia/*.txt", "../models/bts6/pe_ia/*.json", "../models/bts6/early/h*/*.txt", "../models/bts6/early/h*/*.json", "../models/bts6/early/h*/*.gz", "../models/bts6/onnx/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["E501"]

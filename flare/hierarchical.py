@@ -58,8 +58,19 @@ class HierarchicalFlare:
     @classmethod
     def from_pretrained(cls, cfg: SchemeConfig = BTS6) -> "HierarchicalFlare":
         import lightgbm as lgb
-        top = lgb.Booster(model_file=str(cfg.model_paths["top"]))
-        branch = lgb.Booster(model_file=str(cfg.model_paths["slsn_branch"]))
+        top_path = Path(cfg.model_paths["top"])
+        branch_path = Path(cfg.model_paths["slsn_branch"])
+        if not top_path.exists():
+            raise FileNotFoundError(
+                f"Model file not found: {top_path}. "
+                "Ensure models are placed in the configured models directory or set FLARE_MODELS_DIR."
+            )
+        if not branch_path.exists():
+            raise FileNotFoundError(
+                f"Model branch file not found: {branch_path}."
+            )
+        top = lgb.Booster(model_file=str(top_path))
+        branch = lgb.Booster(model_file=str(branch_path))
         thr, qhat, alpha = 0.5, None, cfg.alpha
         cal_scores = coverage = None
         card_path = cfg.model_paths.get("card")

@@ -76,12 +76,12 @@ def passes_quality(arr: np.ndarray) -> bool:
 def filter_manifest_quality(df: pd.DataFrame,
                             horizon_days: float = HORIZON_DAYS) -> Tuple[pd.DataFrame, dict]:
     keep = np.zeros(len(df), dtype=bool)
-    for i, row in df.iterrows():
+    for pos, (_, row) in enumerate(df.iterrows()):
         try:
-            keep[i] = passes_quality(load_events(row.filepath, horizon_days))
+            keep[pos] = passes_quality(load_events(row.filepath, horizon_days))
         except Exception:
             continue
-    out = df.loc[keep].reset_index(drop=True)
+    out = df.iloc[keep].reset_index(drop=True)
     return out, {
         "rows_before": int(len(df)),
         "rows_after": int(len(out)),

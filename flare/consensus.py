@@ -82,8 +82,15 @@ def load(directory: str | Path) -> Consensus | None:
         import luna  # the pickle holds a luna.LUNAPipeline
     except ImportError:
         return None
-    if tuple(int(x) for x in luna.__version__.split(".")[:2]) < (0, 3):
-        return None     # p-values and multi-rate flags arrived in luna-ood 0.3
+    try:
+        from packaging.version import parse as _vparse
+        if _vparse(str(getattr(luna, "__version__", "0.0"))) < _vparse("0.3"):
+            return None
+    except Exception:
+        import re
+        nums = [int(x) for x in re.findall(r"\d+", str(getattr(luna, "__version__", "0.0")))[:2]]
+        if tuple(nums) < (0, 3):
+            return None     # p-values and multi-rate flags arrived in luna-ood 0.3
     raw = path.read_bytes()
     manifest = json.loads((directory / "manifest.json").read_text())
     if manifest.get(FILENAME) != hashlib.sha256(raw).hexdigest():
