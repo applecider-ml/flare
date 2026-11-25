@@ -7,7 +7,7 @@ name = "flare-transients"
 version = "2.1.0"
 description = "Feature-based Light-curve Aggregated Ranking Ensemble — physics features + gradient-boosted trees for ZTF photometric transient classification with conformal uncertainty"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Argyro Sasli" }]
 keywords = ["astronomy", "transients", "photometry", "ZTF", "TDE", "classification", "conformal", "lightgbm"]
@@ -53,7 +53,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]
