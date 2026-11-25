@@ -10,7 +10,9 @@ logic is versioned here with the models it uses.
 Parameters (all optional): horizon_days (100), context ("live" | "none"),
 base_rate (0.0326), agent (False; LLM triage through applecider-agents, needs
 ANTHROPIC_API_KEY), plot (True), forecast (True), reconstruction (True; GP curve over the
-observed data, drawn with the forecast as one model light curve), redshift, ra, dec.
+observed data, drawn with the forecast as one model light curve), pe (True; SALT3 t0, mB, x1, c
+when the 90% set at the estimation day is exactly {SN_Ia}; "force" for a source already
+confirmed as SN Ia), pe_horizon (5, 10 or 20), redshift, ra, dec.
 """
 from __future__ import annotations
 
@@ -338,7 +340,7 @@ def plot_lightcurve(events, cls: dict, resource_id: str, outdir: Path) -> list[s
     return [str(path)]
 
 
-def annotations_for(cls: dict, verdict: dict) -> dict:
+def annotations_for(cls: dict, verdict: dict, pe: dict | None = None) -> dict:
     """Flat annotation dict (human-readable summary numbers + the probability vector)."""
     a = cls["anomaly"]
     top = max(cls["probabilities"], key=cls["probabilities"].get)
@@ -362,6 +364,9 @@ def annotations_for(cls: dict, verdict: dict) -> dict:
         # false-alarm rate per unit time over the analyses of this source (flare.lifetime)
         "flare_lifetime_p": (a.get("lifetime") or {}).get("lifetime_p"),
         "flare_false_alarms_per_day": (a.get("lifetime") or {}).get("false_alarms_per_day"),
+        # the same as the share of saved known sources at least as significant, and per week
+        "flare_lifetime_fraction": (a.get("lifetime") or {}).get("lifetime_false_alarm_fraction"),
+        "flare_false_alarms_per_week": (a.get("lifetime") or {}).get("false_alarms_per_week"),
         "flare_far_level": (a.get("lifetime") or {}).get("level"),
         # review priority from operator confirmations (flare.review): smaller p = review first
         "flare_review_p": (a.get("review") or {}).get("review_p"),
@@ -369,12 +374,19 @@ def annotations_for(cls: dict, verdict: dict) -> dict:
         "flare_verdict": verdict.get("verdict"),
         "flare_priority": verdict.get("priority"),
     }
+    if pe and pe.get("status") == "conditional":
+        # SN Ia parameters (SALT3), each with the half-width of its 68% interval
+        out["flare_pe_day"] = pe["model_horizon_days"]
+        for name, key in (("t0_mjd", "t0_mjd"), ("mB", "mB"), ("x1", "x1"), ("c", "c")):
+            par = pe["parameters"][key]
+            out[f"flare_pe_{name}"] = round(par["value"], 4)
+            out[f"flare_pe_{name}_err68"] = round((par["interval68"][1] - par["interval68"][0]) / 2, 4)
     return {k: v for k, v in out.items() if v is not None and not (isinstance(v, float) and math.isnan(v))}
 
 
-def skyportal_annotations(cls: dict, verdict: dict) -> list:
+def skyportal_annotations(cls: dict, verdict: dict, pe: dict | None = None) -> list:
     """The webhook form: a list of {origin, data}; a flat dict is silently dropped by SkyPortal."""
-    return [{"origin": SKYPORTAL_ORIGIN, "data": annotations_for(cls, verdict)}]
+    return [{"origin": SKYPORTAL_ORIGIN, "data": annotations_for(cls, verdict, pe)}]
 
 
 def skyportal_classifications(cls: dict) -> list:
@@ -428,6 +440,60 @@ def forecast_overlay(rows, context: dict, z, params: dict) -> dict:
                 routing_class=out.get("routing_class"), band_calibration=out.get("band_calibration"),
                 model_lightcurve=curves, detections_used_until_day=min(age, h),
                 note="68% band; the first point of each curve is the last detection on the forecast day")
+
+
+PE_HORIZONS = (5, 10, 20)
+
+
+def pe_block(rows, context: dict, z, params: dict) -> dict:
+    """SALT3 parameters (t0, mB, x1, c) of a photometric SN Ia from the FLARE analysis engine, with
+    conformal 68% and 95% intervals.
+
+    The estimation day is the smallest shipped horizon (5, 10 or 20 d) that contains every detection
+    so far, capped at 20 d (later detections are then not used). The estimate is conditional on the
+    Ia class, so it is returned only when the 90% conformal set of the classifier at the estimation
+    day is exactly {SN_Ia}, the gate of ``FlareAnalysis.analyze``; ``pe="force"`` skips the gate for
+    a source already confirmed as SN Ia. ``t0`` is also given as an MJD."""
+    from .fetch import to_events
+    from .analysis import FlareAnalysis, feature_frame as analysis_frame, observed_events
+    rows = sorted(rows)
+    first, last = float(rows[0][0]), float(rows[-1][0]); age = last - first
+    n_g = sum(1 for r in rows if int(r[1]) == 1); n_r = sum(1 for r in rows if int(r[1]) == 2)
+    if len(rows) < 8 or n_g < 2 or n_r < 2:      # the same minimum as the forecast
+        return dict(status="skipped", reason=f"too few detections for parameter estimation ({len(rows)} total, {n_g} g, {n_r} r; need 8, with 2 in g and r)")
+    h = int(params.get("pe_horizon") or next((H for H in PE_HORIZONS if H >= age), PE_HORIZONS[-1]))
+    events = to_events(list(rows), horizon_days=100.0)
+    ctx = {k: v for k, v in (context or {}).items() if isinstance(v, (int, float)) and math.isfinite(v)}
+    if z is not None:
+        ctx["z_phot"] = float(z)
+    engine = FlareAnalysis()
+    engine._metadata("pe_ia", h)
+    forced = str(params.get("pe")).lower() == "force"
+    if not forced:
+        gx, _ = analysis_frame(observed_events(events, h), ctx)
+        clf = engine._classifier_at(h)
+        gate = clf.conformal_report(gx.reindex(columns=clf.feature_names))[0]
+        if gate["set"] != ["SN_Ia"]:
+            return dict(status="abstained", model_horizon_days=h, gate_set=gate["set"],
+                        reason=f"SN Ia is not the only class in the 90% set at day {h}")
+    out = engine.pe(events, h, context=ctx)
+    t0 = out["parameters"]["t0"]
+    out["parameters"]["t0_mjd"] = dict(value=round(first + t0["value"], 4),
+                                       interval68=[round(first + v, 4) for v in t0["interval68"]],
+                                       interval95=[round(first + v, 4) for v in t0["interval95"]])
+    out["units"]["t0_mjd"] = "MJD of the SALT3 t0 (B-band maximum)"
+    out.update(gate="forced by the caller (pe='force')" if forced else f"90% set is {{SN_Ia}} at day {h}",
+               detections_used_until_day=round(min(age, h), 2))
+    return out
+
+
+def pe_summary(pe: dict) -> str:
+    """One clause for the status message."""
+    par = pe["parameters"]
+    half = lambda k: (par[k]["interval68"][1] - par[k]["interval68"][0]) / 2  # noqa: E731
+    return (f"SN Ia fit from the day-{pe['model_horizon_days']} model (68%): "
+            f"t0 MJD {par['t0_mjd']['value']:.1f} +/- {half('t0_mjd'):.1f}, mB {par['mB']['value']:.2f} +/- {half('mB'):.2f}, "
+            f"x1 {par['x1']['value']:.2f} +/- {half('x1'):.2f}, c {par['c']['value']:.2f} +/- {half('c'):.2f}")
 
 
 def reconstruction_overlay(rows) -> dict:
@@ -552,9 +618,15 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             else f"anomaly score not calibrated at this phase (energy percentile {a['energy_percentile']:.1f} for the record)")
     life = a.get("lifetime")
     if life is not None:
-        days = life.get("one_false_alarm_per_days")
-        anom += (f"; over {life['n_analyses']} analyses one false alarm per {days:g} days on the stream"
-                 f" ({life['level'] or 'below 1 per week'})" if days else f"; over {life['n_analyses']} analyses no false-alarm level reached")
+        frac = life.get("lifetime_false_alarm_fraction")
+        if frac is not None and life.get("false_alarms_per_week") is not None:
+            one_in = life.get("one_in_alerts")
+            anom += (f"; over {life['n_analyses']} analyses, {100 * frac:.1f}% of saved known sources are as significant, "
+                     f"i.e. {life['false_alarms_per_week']:g} false alarms per week ({life['rate_in_words']}"
+                     + (f", 1 in {one_in / 1e6:g} million alerts" if one_in else "") + ")"
+                     + ("; anomaly alarm (one false alarm a week or rarer)" if life["levels"].get(LIFETIME_ALARM_LEVEL) else ""))
+        else:
+            anom += f"; over {life['n_analyses']} analyses no false-alarm level reached"
     head = f"FLARE ({cls['model']}, {len(events)} detections over {span:.1f} d)"
     if verdict["verdict"] == "ambiguous" and cls["predicted"] == "SN":
         message = (f"{head}: supernova (p={cls['probabilities_coarse']['SN']:.2f}), type unresolved, 90% set {setstr}, "
@@ -586,6 +658,16 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             forecast = forecast_overlay(rows, ctx, z, params)
         except Exception as e:  # noqa: BLE001 — the forecast is optional; classification and anomaly stand on their own
             forecast = dict(status="error", reason=f"{type(e).__name__}: {e}")
+    pe = None
+    if verdict["verdict"] == "host_mismatch":
+        pe = dict(status="skipped", reason="no headline class: the estimate is conditional on SN Ia")
+    elif _as_bool(params.get("pe"), True) or str(params.get("pe")).lower() == "force":
+        try:
+            pe = pe_block(rows, ctx, z, params)
+        except Exception as e:  # noqa: BLE001 — optional, as the forecast
+            pe = dict(status="error", reason=f"{type(e).__name__}: {e}")
+    if pe and pe.get("status") == "conditional":
+        message += "; " + pe_summary(pe)
     result = {
         "status": "success", "message": message,
         "results": {"resource_id": resource_id, "n_detections": int(len(events)), "n_rows_input": int(n_input),
@@ -595,8 +677,8 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
                     "redshift_source": "skyportal" if z is not None else ("host photo-z" if ctx.get("z_phot") else None),
                     "classification": cls, "context": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in ctx.items()},
                     "context_error": context.get("_error"), "triage": verdict},
-        "annotations": skyportal_annotations(cls, verdict), "classifications": skyportal_classifications(cls),
-        "annotations_flat": annotations_for(cls, verdict), "plot_files": plots,
+        "annotations": skyportal_annotations(cls, verdict, pe), "classifications": skyportal_classifications(cls),
+        "annotations_flat": annotations_for(cls, verdict, pe), "plot_files": plots,
     }
     reconstruction = None
     if _as_bool(params.get("reconstruction"), True):
@@ -604,7 +686,7 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             reconstruction = reconstruction_overlay(rows)
         except Exception as e:  # noqa: BLE001 — the overlay is optional, as the forecast
             reconstruction = dict(status="error", reason=f"{type(e).__name__}: {e}")
-    for key, block in (("forecast", forecast), ("reconstruction", reconstruction)):
+    for key, block in (("forecast", forecast), ("reconstruction", reconstruction), ("pe", pe)):
         if block is not None:
             result["results"][key] = {k: v for k, v in block.items() if k != "model_lightcurve"}
     overlay = join_overlays(reconstruction, forecast)
