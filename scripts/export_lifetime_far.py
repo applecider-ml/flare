@@ -32,17 +32,34 @@ def traj(s):
     return out
 
 
+def level_threshold(cal, rate, days):
+    """Largest observed threshold whose inclusive tie group fits the empirical FAR budget.
+
+    Zero disables a level when no group fits: conformal lifetime statistics are strictly positive.
+    The count/N budget here is distinct from the runtime's +1-smoothed FAR estimate.
+    """
+    values, counts = np.unique(cal, return_counts=True)
+    eligible = np.cumsum(counts) / len(cal) * rate <= 1.0 / days
+    return float(values[eligible][-1]) if np.any(eligible) else 0.0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--replay", type=Path, required=True); ap.add_argument("--models", type=Path, required=True)
     ap.add_argument("--rate", type=float, required=True); ap.add_argument("--rate-note", default="")
     a = ap.parse_args()
+    if not np.isfinite(a.rate) or a.rate <= 0:
+        ap.error("--rate must be finite and strictly positive")
     d = pd.read_csv(a.replay)
     known = [running_minimum(traj(t)) for t in d[d.population == "known"].trajectory]
     rare = [running_minimum(traj(t)) for t in d[d.population == "rare"].trajectory]
+    if not known:
+        raise ValueError("replay contains no known-class objects")
     ks = sorted({k for r in known for k in r})
     ref = {k: np.sort([r[k] for r in known if k in r]) for k in ks}
     ref = {k: v for k, v in ref.items() if len(v) >= MIN_REF}
+    if not ref:
+        raise ValueError(f"no analysis index has at least {MIN_REF} known-class objects")
     kk = np.array(sorted(ref))
 
     def p_life(run):
@@ -53,23 +70,21 @@ def main():
         return best
 
     cal = np.sort([p_life(r) for r in known])
-    levels = {}
-    for name, days in LEVELS.items():
-        frac = 1.0 / (days * a.rate); n_allowed = int(np.floor(frac * len(cal)))
-        levels[name] = float(cal[n_allowed - 1]) if n_allowed >= 1 else 0.0
+    levels = {name: level_threshold(cal, a.rate, days) for name, days in LEVELS.items()}
     pr = np.array([p_life(r) for r in rare])
     table = dict(
-        running_min={int(k): [round(float(x), 6) for x in v] for k, v in ref.items()},
+        running_min={int(k): v.tolist() for k, v in ref.items()},
         stream_rate_per_day=a.rate, stream_rate_note=a.rate_note, levels=levels,
-        p_life_reference=[round(float(x), 6) for x in cal],
+        p_life_reference=cal.tolist(),
         n_known=len(known), n_analyses_median=float(np.median([len(r) for r in known])),
         realised_on_reference={name: float(np.mean(cal <= thr)) for name, thr in levels.items()},
         rares_for_the_record={name: int((pr <= thr).sum()) for name, thr in levels.items()}, n_rares=len(rare),
         note=("P_life = min over analyses of the conformal p-value of the running-minimum per-analysis p against "
               "the known test objects replayed detection by detection with the deployed models on the photometry "
-              "that Fritz supplies to the service (ZTF rows); thresholds are the quantiles of P_life on the same "
-              "objects, so the realised rates above are in-sample (split-half check in the paper); the false-alarm "
-              "rate per unit time is the fraction of these objects whose P_life is at least as small, times the stream rate"))
+              "that Fritz supplies to the service (ZTF rows); thresholds admit the largest complete tie group "
+              "whose count/N times the stream rate fits the named budget (zero disables a level). These rates "
+              "are in-sample (split-half check in the paper). Runtime reports a separate +1-smoothed FAR estimate, "
+              "(1+count)/(N+1) times the stream rate, which can exceed the named budget."))
     out = a.models / FILENAME
     out.write_text(json.dumps(table))
     man_path = a.models / "manifest.json"; man = json.loads(man_path.read_text())
