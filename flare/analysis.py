@@ -139,6 +139,7 @@ class FlareAnalysis:
         self._manifest = None
         self._early_classifiers = {}
         self._blend_forecaster = None
+        self._gamut_forecaster = None
 
     def _classifier_at(self, horizon):
         if self._automatic_classifier and horizon in (5, 10, 20):
@@ -147,6 +148,11 @@ class FlareAnalysis:
                 self._early_classifiers[horizon] = load_classifier('bts6', horizon_days=int(horizon))
             return self._early_classifiers[horizon]
         return self.classifier
+
+    def _gamut_classifier(self, clf_horizon):
+        if not self._automatic_classifier or clf_horizon is None:
+            return self.classifier
+        return self._classifier_at(int(clf_horizon))
 
     def _checked_path(self, relative):
         if self._manifest is None:
@@ -181,15 +187,26 @@ class FlareAnalysis:
             raise ValueError(f"feature order mismatch for {key}")
         return model.predict(frame, num_threads=self.num_threads)
 
-    def forecast(self, events, horizon_days, context=None, recipe="grid", days=None):
-        """Forecast with the original grid recipe or the optional day10/20 blend.
+    def forecast(self, events, horizon_days, context=None, recipe="grid", days=None, gamut_mode="crossfit"):
+        """Forecast with the original grid recipe, day10/20 blend, or GAMUT bands.
 
-        For the blend, ``days`` can request exact future timestamps through day90.
-        Its residual intervals are empirical pointwise bands, not simultaneous
-        or class-conditional coverage guarantees.
+        For ``blend`` and ``gamut``, ``days`` can request exact future timestamps
+        through day 90. ``gamut`` constructs dual-weighted posterior-mixture level
+        sets across all six BTS classes (``gamut_mode='crossfit'`` or ``'split'``).
         """
-        if recipe not in ("grid", "blend"):
-            raise ValueError("forecast recipe must be 'grid' or 'blend'")
+        if recipe not in ("grid", "blend", "gamut"):
+            raise ValueError("forecast recipe must be 'grid', 'blend' or 'gamut'")
+        if recipe == "gamut":
+            from .forecast_gamut import SUPPORTED_HORIZONS, GamutForecaster
+            if horizon_days not in SUPPORTED_HORIZONS:
+                raise ValueError(f"GAMUT forecast horizon must be one of {SUPPORTED_HORIZONS}; no automatic rounding")
+            arr = observed_events(events, horizon_days)
+            X, peak = feature_frame(arr, context)
+            if self._gamut_forecaster is None:
+                self._gamut_forecaster = GamutForecaster(self.model_dir / 'forecast_gamut', self.num_threads)
+            clf = self._gamut_classifier(self._gamut_forecaster.classifier_horizon(horizon_days))
+            probs = clf.predict_proba(X.reindex(columns=clf.feature_names).astype(float))[0]
+            return json_safe(self._gamut_forecaster.predict(arr, X, probs, peak, horizon_days, days=days, mode=gamut_mode))
         if recipe == "blend":
             if horizon_days not in (10, 20):
                 raise ValueError("blend forecast horizon must be 10 or 20")
@@ -200,7 +217,7 @@ class FlareAnalysis:
                 self._blend_forecaster = BlendForecaster(self.model_dir / 'forecast_blend', self.num_threads)
             return json_safe(self._blend_forecaster.predict(arr, X, peak, horizon_days, days))
         if days is not None:
-            raise ValueError("explicit forecast days are supported only with recipe='blend'")
+            raise ValueError("explicit forecast days are supported only with recipe='blend' or 'gamut'")
         meta = self._metadata("forecast", horizon_days)
         arr = observed_events(events, horizon_days)
         X, peak = feature_frame(arr, context)
@@ -313,9 +330,9 @@ class FlareAnalysis:
 
     def analyze(self, events, horizon_days=100, context=None, forecast_horizon=None,
                 pe_horizon=None, include_reconstruction=True, base_rate=None,
-                forecast_recipe="grid", next_obs_horizon=None):
-        if forecast_recipe not in ("grid", "blend"):
-            raise ValueError("forecast_recipe must be 'grid' or 'blend'")
+                forecast_recipe="grid", gamut_mode="crossfit", next_obs_horizon=None):
+        if forecast_recipe not in ("grid", "blend", "gamut"):
+            raise ValueError("forecast_recipe must be 'grid', 'blend' or 'gamut'")
         arr = observed_events(events, horizon_days)
         X, _ = feature_frame(arr, context)
         classifier = self._classifier_at(horizon_days)
@@ -357,7 +374,7 @@ class FlareAnalysis:
                     result[task] = dict(status="abstained", reason="Ia is not the sole conformal candidate at the PE horizon", gate_set=gate['set'])
                     continue
             if task == 'forecast':
-                result[task] = self.forecast(arr, h, context, recipe=forecast_recipe)
+                result[task] = self.forecast(arr, h, context, recipe=forecast_recipe, gamut_mode=gamut_mode)
             else:
                 result[task] = self.pe(arr, h, context)
         if next_obs_horizon is None:
