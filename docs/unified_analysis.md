@@ -69,6 +69,15 @@ context cannot overwrite light-curve features.
   gate purity guarantee. PE intervals were calibrated on true,
   quality-selected Ia and approximate full-curve SALT3 fits. Weak early stretch
   constraints are retained explicitly in the metadata.
+* `next_observation`: expected narrowing of the 90% classification set from one
+  more `g` or `r` point at day 5 or 10 (`next_obs_horizon=5` or `10`). The
+  default `next_obs_recipe="grid"` preserves `delta_S` and raw `p_singleton`
+  while adding inductive Venn-Abers calibrated `p_singleton_calibrated` and
+  `p_singleton_interval`. `next_obs_recipe="gamut"` (CLI `--next-obs-recipe gamut`,
+  SkyPortal `next_obs: "gamut"`) evaluates a latent-class next-point mixture
+  using hypothesis-conditional quantile boosters, out-of-fold empirical class
+  residual quantiles, temperature-scaled phase posteriors and Venn-Abers
+  calibration, including on single-band prefixes.
 
 Choose model horizons no later than the observation cutoff. A forecast from
 day 10 with a day-17 observation cutoff uses detections through day 10, and is

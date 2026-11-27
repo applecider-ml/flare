@@ -46,7 +46,7 @@ packages = ["flare"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*.txt", "../models/bts6/*.json", "../models/bts6/*.gz", "../models/bts6/forecast/*.txt", "../models/bts6/forecast/*.json", "../models/bts6/forecast_blend/*.txt", "../models/bts6/forecast_blend/*.json", "../models/bts6/pe_ia/*.txt", "../models/bts6/pe_ia/*.json", "../models/bts6/early/h*/*.txt", "../models/bts6/early/h*/*.json", "../models/bts6/early/h*/*.gz", "../models/bts6/onnx/*"]
+flare = ["../models/*.txt", "../models/*.json", "../models/bts6/*.txt", "../models/bts6/*.json", "../models/bts6/*.gz", "../models/bts6/forecast/*.txt", "../models/bts6/forecast/*.json", "../models/bts6/forecast_blend/*.txt", "../models/bts6/forecast_blend/*.json", "../models/bts6/pe_ia/*.txt", "../models/bts6/pe_ia/*.json", "../models/bts6/next_observation/*.txt", "../models/bts6/next_observation/*.json", "../models/bts6/early/h*/*.txt", "../models/bts6/early/h*/*.json", "../models/bts6/early/h*/*.gz", "../models/bts6/onnx/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

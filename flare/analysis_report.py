@@ -73,7 +73,13 @@ def render_analysis(records):
             panels.append('<table><tr><th>Band</th><th>Expected set size</th><th>Expected reduction</th><th>P(single class)</th></tr>')
             for band, v in nx['bands'].items():
                 if v['status'] == 'ok':
-                    panels.append(f'<tr><td>{band}</td><td>{v["expected_set_size"]:.2f}</td><td>{v["delta_S"]:+.2f}</td><td>{v["p_singleton"]:.2f}</td></tr>')
+                    p_val = v.get("p_singleton_calibrated", v["p_singleton"])
+                    if "p_singleton_interval" in v:
+                        lo, hi = v["p_singleton_interval"]
+                        p_txt = f'{p_val:.2f} ({lo:.2f}–{hi:.2f})'
+                    else:
+                        p_txt = f'{p_val:.2f}'
+                    panels.append(f'<tr><td>{band}</td><td>{v["expected_set_size"]:.2f}</td><td>{v["delta_S"]:+.2f}</td><td>{p_txt}</td></tr>')
             panels.append(f'</table><p>{escape(nx["calibration"])}</p>')
         else:
             panels.append(f'<p>{escape(nx.get("reason", nx.get("status", "disabled")))}</p>')

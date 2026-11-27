@@ -13,6 +13,7 @@ The one exception is `consensus.pkl.gz`, a pickled LUNA pipeline that is read on
 | `bts6/lifetime_far.json` | lifetime false-alarm reference of `flare.lifetime`: running minima per analysis, stream rate and the thresholds of one false alarm per week, month and quarter |
 | `bts6/review_combiner.json` | supervised review combiner of `flare.review`, refitted by `scripts/review_nightly.py` |
 | `bts6/forecast_pe_manifest.json` | hashes of the forecast and SN Ia parameter files, checked at load time |
+| `bts6/next_observation/` | day-5 and day-10 hypothesis-conditional next-point boosters, out-of-fold residual quantiles and Venn-Abers set-closure tables of `FlareAnalysis.next_observation_value` (`manifest.json` SHA-256 checked at load time) |
 
 Load: `flare.load_classifier()` (full curve) or `flare.load_classifier(horizon_days=5)`.
 The full-curve and early models are fitted on the benchmark's train and validation splits

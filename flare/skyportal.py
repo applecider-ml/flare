@@ -340,7 +340,7 @@ def plot_lightcurve(events, cls: dict, resource_id: str, outdir: Path) -> list[s
     return [str(path)]
 
 
-def annotations_for(cls: dict, verdict: dict, pe: dict | None = None) -> dict:
+def annotations_for(cls: dict, verdict: dict, pe: dict | None = None, next_obs: dict | None = None) -> dict:
     """Flat annotation dict (human-readable summary numbers + the probability vector)."""
     a = cls["anomaly"]
     top = max(cls["probabilities"], key=cls["probabilities"].get)
@@ -381,12 +381,21 @@ def annotations_for(cls: dict, verdict: dict, pe: dict | None = None) -> dict:
             par = pe["parameters"][key]
             out[f"flare_pe_{name}"] = round(par["value"], 4)
             out[f"flare_pe_{name}_err68"] = round((par["interval68"][1] - par["interval68"][0]) / 2, 4)
+    if next_obs and next_obs.get("status") == "ok":
+        out["flare_next_obs_day"] = next_obs["observation_cutoff_days"]
+        out["flare_next_best_band"] = next_obs.get("best_band")
+        for b_name in ("g", "r"):
+            b_info = (next_obs.get("bands") or {}).get(b_name) or {}
+            if b_info.get("status") == "ok":
+                p_val = b_info.get("p_singleton_calibrated", b_info["p_singleton"])
+                out[f"flare_next_p_singleton_{b_name}"] = round(float(p_val), 4)
+                out[f"flare_next_delta_s_{b_name}"] = round(float(b_info["delta_S"]), 4)
     return {k: v for k, v in out.items() if v is not None and not (isinstance(v, float) and math.isnan(v))}
 
 
-def skyportal_annotations(cls: dict, verdict: dict, pe: dict | None = None) -> list:
+def skyportal_annotations(cls: dict, verdict: dict, pe: dict | None = None, next_obs: dict | None = None) -> list:
     """The webhook form: a list of {origin, data}; a flat dict is silently dropped by SkyPortal."""
-    return [{"origin": SKYPORTAL_ORIGIN, "data": annotations_for(cls, verdict, pe)}]
+    return [{"origin": SKYPORTAL_ORIGIN, "data": annotations_for(cls, verdict, pe, next_obs)}]
 
 
 def skyportal_classifications(cls: dict) -> list:
@@ -443,6 +452,28 @@ def forecast_overlay(rows, context: dict, z, params: dict) -> dict:
 
 
 PE_HORIZONS = (5, 10, 20)
+NEXT_OBS_HORIZONS = (5, 10)
+
+
+def next_obs_block(rows, context: dict, z, params: dict) -> dict:
+    """Calibrated next-night set-closure probabilities and expected narrowing at day 5 or 10."""
+    from .fetch import to_events
+    from .analysis import FlareAnalysis
+    rows = sorted(rows)
+    first, last = float(rows[0][0]), float(rows[-1][0]); age = last - first
+    if params.get("next_obs_horizon") is None and age > NEXT_OBS_HORIZONS[-1]:
+        return dict(status="skipped", reason=f"detections span {age:.1f} d (> {NEXT_OBS_HORIZONS[-1]} d)")
+    raw_mode = params.get("next_obs")
+    recipe = str(raw_mode).lower() if str(raw_mode).lower() in ("grid", "gamut") else "gamut"
+    n_g = sum(1 for r in rows if int(r[1]) == 1); n_r = sum(1 for r in rows if int(r[1]) == 2)
+    if len(rows) < 8 or (recipe == "grid" and (n_g < 2 or n_r < 2)):
+        return dict(status="skipped", reason=f"too few detections for next-observation value ({len(rows)} total, {n_g} g, {n_r} r)")
+    h = int(params.get("next_obs_horizon") or next((H for H in NEXT_OBS_HORIZONS if H >= age), NEXT_OBS_HORIZONS[-1]))
+    events = to_events(list(rows), horizon_days=100.0)
+    ctx = {k: v for k, v in (context or {}).items() if isinstance(v, (int, float)) and math.isfinite(v)}
+    if z is not None:
+        ctx["z_phot"] = float(z)
+    return FlareAnalysis().next_observation_value(events, h, context=ctx, recipe=recipe)
 
 
 def pe_block(rows, context: dict, z, params: dict) -> dict:
@@ -668,6 +699,16 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             pe = dict(status="error", reason=f"{type(e).__name__}: {e}")
     if pe and pe.get("status") == "conditional":
         message += "; " + pe_summary(pe)
+    next_obs = None
+    next_obs_param = params.get("next_obs")
+    if _as_bool(next_obs_param) or str(next_obs_param).lower() in ("grid", "gamut"):
+        if verdict["verdict"] == "host_mismatch":
+            next_obs = dict(status="skipped", reason="no headline class: next-observation models assume the six BTS classes")
+        else:
+            try:
+                next_obs = next_obs_block(rows, ctx, z, params)
+            except Exception as e:  # noqa: BLE001 — optional diagnostic block
+                next_obs = dict(status="error", reason=f"{type(e).__name__}: {e}")
     result = {
         "status": "success", "message": message,
         "results": {"resource_id": resource_id, "n_detections": int(len(events)), "n_rows_input": int(n_input),
@@ -677,8 +718,8 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
                     "redshift_source": "skyportal" if z is not None else ("host photo-z" if ctx.get("z_phot") else None),
                     "classification": cls, "context": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in ctx.items()},
                     "context_error": context.get("_error"), "triage": verdict},
-        "annotations": skyportal_annotations(cls, verdict, pe), "classifications": skyportal_classifications(cls),
-        "annotations_flat": annotations_for(cls, verdict, pe), "plot_files": plots,
+        "annotations": skyportal_annotations(cls, verdict, pe, next_obs), "classifications": skyportal_classifications(cls),
+        "annotations_flat": annotations_for(cls, verdict, pe, next_obs), "plot_files": plots,
     }
     reconstruction = None
     if _as_bool(params.get("reconstruction"), True):
@@ -686,7 +727,7 @@ def analyze(rows, redshift, params: dict | None, resource_id: str = "obj", work_
             reconstruction = reconstruction_overlay(rows)
         except Exception as e:  # noqa: BLE001 — the overlay is optional, as the forecast
             reconstruction = dict(status="error", reason=f"{type(e).__name__}: {e}")
-    for key, block in (("forecast", forecast), ("reconstruction", reconstruction), ("pe", pe)):
+    for key, block in (("forecast", forecast), ("reconstruction", reconstruction), ("pe", pe), ("next_observation", next_obs)):
         if block is not None:
             result["results"][key] = {k: v for k, v in block.items() if k != "model_lightcurve"}
     overlay = join_overlays(reconstruction, forecast)

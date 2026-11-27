@@ -28,6 +28,8 @@ def main(argv=None):
     p.add_argument("--pe-horizon", type=int, choices=[5, 10, 20])
     p.add_argument("--next-obs-horizon", type=int, choices=[5, 10],
                    help="expected narrowing of the prediction set from one more g or r point tomorrow")
+    p.add_argument("--next-obs-recipe", choices=["grid", "gamut"], default="grid",
+                   help="gamut: latent-class next-point mixture with Venn-Abers calibration")
     p.add_argument("--context", help="JSON mapping file stem to external context, optionally z_phot")
     p.add_argument("--no-reconstruction", action="store_true")
     p.add_argument("--base-rate", type=float)
@@ -48,6 +50,8 @@ def main(argv=None):
     if a.cmd == "analyze":
         if a.forecast_recipe == "blend" and a.forecast_horizon not in (10, 20):
             ap.error("--forecast-recipe blend requires --forecast-horizon 10 or 20")
+        if a.next_obs_recipe == "gamut" and a.next_obs_horizon is None:
+            ap.error("--next-obs-recipe gamut requires --next-obs-horizon 5 or 10")
         from pathlib import Path
         from . import load_analysis
         from .data import load_events
@@ -60,7 +64,7 @@ def main(argv=None):
                 context=contexts.get(Path(fp).stem), forecast_horizon=a.forecast_horizon,
                 pe_horizon=a.pe_horizon, include_reconstruction=not a.no_reconstruction,
                 base_rate=a.base_rate, forecast_recipe=a.forecast_recipe,
-                next_obs_horizon=a.next_obs_horizon)
+                next_obs_horizon=a.next_obs_horizon, next_obs_recipe=a.next_obs_recipe)
         if a.html:
             from .analysis_report import render_analysis
             text = render_analysis(results)
