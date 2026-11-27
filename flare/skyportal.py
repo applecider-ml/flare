@@ -422,12 +422,14 @@ def forecast_overlay(rows, context: dict, z, params: dict) -> dict:
     if len(rows) < 8 or n_g < 2 or n_r < 2:      # the same minimum as the classifier's insufficient_data rule
         return dict(status="skipped", reason=f"too few detections for a forecast ({len(rows)} total, {n_g} g, {n_r} r; need 8, with 2 in g and r)")
     h = int(params.get("forecast_horizon") or next((H for H in FORECAST_HORIZONS if H >= age), FORECAST_HORIZONS[-1]))
-    recipe = "blend" if h in (10, 20) else "grid"
+    requested_recipe = params.get("forecast_recipe")
+    recipe = str(requested_recipe) if requested_recipe is not None else ("blend" if h in (10, 20) else "grid")
+    gamut_mode = str(params.get("gamut_mode", "crossfit"))
     events = to_events(list(rows), horizon_days=100.0)
     ctx = {k: v for k, v in (context or {}).items() if isinstance(v, (int, float)) and math.isfinite(v)}
     if z is not None:
         ctx["z_phot"] = float(z)
-    out = FlareAnalysis().forecast(events, h, context=ctx, recipe=recipe)
+    out = FlareAnalysis().forecast(events, h, context=ctx, recipe=recipe, gamut_mode=gamut_mode)
     curves = {}
     for band, name in SKYPORTAL_FILTER.items():
         b = (out.get("bands") or {}).get(band) or {}

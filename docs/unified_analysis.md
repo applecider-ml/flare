@@ -61,8 +61,14 @@ context cannot overwrite light-curve features.
   selects the [fixed 50/50 blend](supervised_improvements.md), with 7.7%/7.6%
   lower median object error in paired development evaluation. Its intervals
   are empirical pointwise residual bands with no class-conditional guarantee.
-  The original `grid` recipe remains the default. For arbitrary future times,
-  use `engine.forecast(events, 10, recipe="blend", days=[12.5, 25., 50.])`.
+  At all five horizons (`5, 10, 15, 20, 30`), `forecast_recipe="gamut"` (CLI
+  `--forecast-recipe gamut`, SkyPortal `forecast_recipe: "gamut"`) constructs
+  dual-weighted posterior-mixture level-set bands across all six BTS classes
+  (`gamut_mode="crossfit"` or `"split"`), returning both outer bounds and
+  connected interval components (`intervals68`, `intervals95`, `width68`,
+  `width95`). The original `grid` recipe remains the default. For arbitrary
+  future times in `(horizon, 90]`, use `engine.forecast(events, 10, recipe="blend", days=[12.5, 25., 50.])`
+  or `engine.forecast(events, 10, recipe="gamut", days=[12.5, 25., 50.])`.
 * `pe`: SALT3 t0, x1, c and mB estimates at day 5, 10 or 20, conditional on Ia.
   The unified API abstains unless the conformal set is exactly `{SN_Ia}` at
   the **PE horizon**. This gate is a conservative product rule, not a validated

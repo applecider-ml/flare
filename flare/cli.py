@@ -23,8 +23,10 @@ def main(argv=None):
     p.add_argument("files", nargs="+")
     p.add_argument("--horizon", type=float, default=100.)
     p.add_argument("--forecast-horizon", type=int, choices=[5, 10, 15, 20, 30])
-    p.add_argument("--forecast-recipe", choices=["grid", "blend"], default="grid",
-                   help="blend: optional improved forecast at day 10 or 20")
+    p.add_argument("--forecast-recipe", choices=["grid", "blend", "gamut"], default="grid",
+                   help="blend: day 10/20 blend; gamut: class-conditional level-set bands")
+    p.add_argument("--gamut-mode", choices=["crossfit", "split"], default="crossfit",
+                   help="calibration mode when --forecast-recipe gamut is selected")
     p.add_argument("--pe-horizon", type=int, choices=[5, 10, 20])
     p.add_argument("--next-obs-horizon", type=int, choices=[5, 10],
                    help="expected narrowing of the prediction set from one more g or r point tomorrow")
@@ -48,6 +50,8 @@ def main(argv=None):
     if a.cmd == "analyze":
         if a.forecast_recipe == "blend" and a.forecast_horizon not in (10, 20):
             ap.error("--forecast-recipe blend requires --forecast-horizon 10 or 20")
+        if a.forecast_recipe == "gamut" and a.forecast_horizon is None:
+            ap.error("--forecast-recipe gamut requires --forecast-horizon")
         from pathlib import Path
         from . import load_analysis
         from .data import load_events
@@ -60,7 +64,7 @@ def main(argv=None):
                 context=contexts.get(Path(fp).stem), forecast_horizon=a.forecast_horizon,
                 pe_horizon=a.pe_horizon, include_reconstruction=not a.no_reconstruction,
                 base_rate=a.base_rate, forecast_recipe=a.forecast_recipe,
-                next_obs_horizon=a.next_obs_horizon)
+                gamut_mode=a.gamut_mode, next_obs_horizon=a.next_obs_horizon)
         if a.html:
             from .analysis_report import render_analysis
             text = render_analysis(results)
